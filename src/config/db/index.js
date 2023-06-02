@@ -1,10 +1,8 @@
-// Connect to db in here
+const firebase = require('firebase/app');
+const config = require('../index');
+const {getFirestore} = require('firebase/firestore/lite');
 
-async function connect() {
-	try {
-	} catch (e) {
-		console.log(e);
-	}
-}
+const app = firebase.initializeApp(config.firebaseConfig);
+const firestore = getFirestore(app);
 
-module.exports = {connect};
+module.exports = {app, firestore};

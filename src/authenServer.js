@@ -2,8 +2,9 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const morgan = require('morgan');
-const db = require('./config/db');
 require('dotenv').config();
+
+const authRouter = require('./routes/authen.route');
 
 const port = process.env.AUTHEN_PORT || 5500;
 
@@ -11,7 +12,6 @@ const port = process.env.AUTHEN_PORT || 5500;
 app.use(
 	cors({
 		origin: process.env.URL_CLIENT,
-		credentials: true,
 	}),
 );
 
@@ -27,8 +27,8 @@ app.use(
 // Config logger for server. When client call any API, server will log
 app.use(morgan('combined'));
 
-// Connect database
-db.connect();
+// Handle routes
+app.use('/api/auth', authRouter);
 
 app.get('/', (req, res) => {
 	res.send(`Server Authentication is listening on port ${port}`);

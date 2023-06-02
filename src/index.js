@@ -2,7 +2,6 @@ const express = require('express');
 const cors = require('cors');
 const app = express();
 const morgan = require('morgan');
-const db = require('./config/db');
 
 require('dotenv').config();
 
@@ -29,7 +28,6 @@ app.use(
 app.use(morgan('combined'));
 
 // Connect database
-db.connect();
 
 app.get('/', (req, res) => {
 	res.send(`Server is listening on port ${port}`);

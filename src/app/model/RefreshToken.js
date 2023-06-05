@@ -1,28 +1,46 @@
-const {firestore} = require('../../config/db');
-const {collection, addDoc, getDocs} = require('firebase/firestore/lite');
+const { firestore } = require('../../config/db')
+const {
+	collection,
+	addDoc,
+	doc,
+	getDocs,
+	deleteDoc,
+	query,
+	where,
+} = require('firebase/firestore/lite')
+
 class RefreshToken {
-	async create(refreshToken) {
-		addDoc(collection(firestore, 'refreshTokens'), {token: refreshToken})
-			.then((docRef) => {
-				console.log('Refresh token created with ID:', docRef.id);
-				// Do something with the created token
-			})
-			.catch((error) => {
-				console.error('Error creating refresh token:', error);
-			});
+	static refreshTokenRef = collection(firestore, 'refresh_tokens')
+
+	static async create(refreshToken) {
+		await addDoc(this.refreshTokenRef, refreshToken)
 	}
 
-	async findOne(token) {
-		const usersCollectionRef = collection(firestore, 'refreshTokens');
-
+	static async findOne(token) {
 		// Lấy dữ liệu từ bộ sưu tập "users"
-		const querySnapshot = await getDocs(usersCollectionRef);
-		let rs = null;
+		const querySnapshot = await getDocs(this.refreshTokenRef)
+		let rs = null
 		querySnapshot.forEach((doc) => {
-			if (doc.data().token.token === token.token) rs = doc.data();
-		});
-		return rs;
+			if (doc.data().token === token) rs = doc.data()
+		})
+		return rs
+	}
+
+	static async deleteOne(field, value) {
+		try {
+			const resultQuery = query(this.refreshTokenRef, where(field, '==', value))
+			const querySnapshot = await getDocs(resultQuery)
+
+			querySnapshot.forEach((doc) => {
+				deleteDoc(doc.ref)
+			})
+
+			return true
+		} catch (er) {
+			console.log(er)
+			return false
+		}
 	}
 }
 
-module.exports = new RefreshToken();
+module.exports = RefreshToken

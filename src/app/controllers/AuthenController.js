@@ -1,10 +1,9 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const { doc, addDoc, getDoc, getDocs, collection } = require('firebase/firestore/lite')
 
-const { User, UserCollection, findOne } = require('../model/User')
-
+const User = require('../model/User')
 const RefreshToken = require('../model/RefreshToken')
+
 const { createTransporter } = require('../../config/mail')
 
 class AuthenController {
@@ -23,16 +22,12 @@ class AuthenController {
 	async register(req, res, next) {
 		const { id, type } = req.body
 		// Check if id exists in University of Science
-		const queryResultUS = query(USStudentCollection, where('id', '==', id))
-		const querySnapshotUS = await getDocs(queryResultUS)
+		const inforOfUserFromUS = await User.findUSOne('id', id)
 
-		if (querySnapshotUS.docs.at(0).exists()) {
-			const inforOfUserFromUS = querySnapshotUS.docs.at(0).data()
+		if (!!inforOfUserFromUS) {
+			const isExisting = await User.findOne('id', id)
 
-			const queryResult = query(UserCollection, where('id', '==', id))
-			const querySnapshot = await getDocs(queryResult)
-
-			if (querySnapshot.empty) {
+			if (!isExisting) {
 				const password = AuthenController.generatePassword()
 				try {
 					const transporter = await createTransporter()
@@ -55,7 +50,8 @@ class AuthenController {
 						email: inforOfUserFromUS.email,
 					}
 
-					await addDoc(UserCollection, data)
+					await User.createOne(data)
+
 					return res.json({
 						msg: 'Đăng ký thành công',
 						statusCode: 200,
@@ -80,17 +76,17 @@ class AuthenController {
 		}
 	}
 
-	// [POST] /api/auth/login [phone, password]
+	// [POST] /api/auth/login [id, password]
 	async login(req, res, next) {
-		console.log(req.body.code)
-		let existingUser = await findOne(req.body.code)
+		let existingUser = await User.findOne('id', req.body.id)
+
 		if (!existingUser)
 			return res.json({
 				msg: 'Mã số chưa đăng ký',
 				msgEnglish: 'The code number is not registered!',
 				result: false,
 			})
-		let result = bcrypt.compareSync(req.body.password, existingUser.password)
+		let result = await bcrypt.compareSync(req.body.password, existingUser.password)
 
 		if (result) {
 			const accessToken = jwt.sign({ code: req.body.code }, process.env.ACCESS_TOKEN_SECRET, {
@@ -119,11 +115,12 @@ class AuthenController {
 		const refreshToken = req.body.refreshToken
 		if (!refreshToken) return res.sendStatus(401)
 
-		const result = await RefreshToken.findOne({ token: refreshToken })
+		const result = await RefreshToken.findOne(refreshToken)
 		if (!result) return res.sendStatus(403)
 
 		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, data) => {
 			if (err) return res.sendStatus(403)
+
 			const accessToken = jwt.sign(
 				{ phone: req.body.phone },
 				process.env.ACCESS_TOKEN_SECRET,
@@ -150,10 +147,37 @@ class AuthenController {
 		if (!refreshToken) return res.sendStatus(401)
 
 		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, data) => {
-			// if (err) return res.sendStatus(403)
-			// await RefreshToken.deleteOne({ token: refreshToken })
-			// return res.json({ result: true })
+			if (err) res.sendStatus(403) //Forbidden
+			try {
+				await RefreshToken.deleteOne('token', refreshToken)
+				return res.json({ statusCode: 200, result: true })
+			} catch (er) {
+				console.log(er)
+				return res.json({ statusCode: 200, result: false })
+			}
 		})
+	}
+
+	// [POST] /api/auth/change-password [id, current_password, new_password]
+	async changePassword(req, res) {
+		const inforOfUser = await User.findOne('id', req.body.id)
+		if (!inforOfUser) {
+			return res.json({ msg: 'ID không chính xác', statusCode: 200 })
+		}
+		let result = await bcrypt.compareSync(req.body.current_password, inforOfUser.password)
+
+		if (result) {
+			const salt = bcrypt.genSaltSync(10)
+			const hash = bcrypt.hashSync(req.body.new_password, salt)
+
+			await User.updateOne(req.body.id, {
+				password: hash,
+			})
+
+			return res.json({ msg: 'Thay đổi mật khẩu thành công', statusCode: 200, result: true })
+		} else {
+			return res.json({ msg: 'Mật khẩu cũ không chính xác', statusCode: 200, result: true })
+		}
 	}
 }
 

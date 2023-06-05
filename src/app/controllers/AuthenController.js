@@ -1,53 +1,79 @@
-const bcrypt = require('bcrypt');
-// const jwt = require('jsonwebtoken');
-const {addDoc, getDoc, getDocs} = require('firebase/firestore/lite');
+const bcrypt = require('bcrypt')
+const { addDoc, getDoc, getDocs, query, where } = require('firebase/firestore/lite')
 
-const {User, UserCollection} = require('../model/User');
+const { User, UserCollection, USStudentCollection } = require('../model/User')
+const { createTransporter } = require('../../config/mail')
 
-// const RefreshToken = require('../model/RefreshToken');
-
-// That is example for one CONTROLLER
 class AuthenController {
-	// [POST] /api/auth/register [phone, username, password]
+	static generatePassword() {
+		var chars = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
+		var passwordLength = 12
+		var password = ''
+		for (var i = 0; i < passwordLength; i++) {
+			const index = Math.floor(Math.random() * chars.length)
+			password += chars[index]
+		}
+		return password
+	}
+
+	// [POST] /api/auth/register [id, type]
 	async register(req, res, next) {
-		// let existingUser = await User.findOne({phone: req.body.phone});
-		// if (existingUser)
-		// 	return res.json({
-		// 		msg: 'Số điện thoại đã được sử dụng',
-		// 		msgEnglish: 'The number phone is used!',
-		// 		statusCode: 200,
-		// 		result: false,
-		// 	});
+		const { id, type } = req.body
+		// Check if id exists in University of Science
+		const queryResultUS = query(USStudentCollection, where('id', '==', id))
+		const querySnapshotUS = await getDocs(queryResultUS)
 
-		// const salt = await bcrypt.genSaltSync(10);
-		// const hash = await bcrypt.hashSync(req.body.password, salt);
+		if (querySnapshotUS.docs.at(0).exists()) {
+			const inforOfUserFromUS = querySnapshotUS.docs.at(0).data()
 
-		// const user = await User.create({
-		// 	...req.body,
-		// 	password: hash,
-		// 	friends: [req.body.phone],
-		// });
-		// if (user) {
-		// 	return res.json({
-		// 		msg: 'Đăng ký thành công',
-		// 		msgEnglish: 'Sign in successully!',
-		// 		statusCode: 200,
-		// 		result: true,
-		// 	});
-		// } else {
-		// 	return res.json({
-		// 		msg: 'Hệ thống xảy ra lỗi. Vui lòng đăng ký lại!',
-		// 		msgEnglish: 'Failure System. Please try again!',
-		// 		result: true,
-		// 	});
-		// }
-		try {
-			const data = req.body;
-			await addDoc(UserCollection, data);
+			const queryResult = query(UserCollection, where('id', '==', id))
+			const querySnapshot = await getDocs(queryResult)
 
-			res.status(201).json({message: 'Record saved successfully'});
-		} catch (error) {
-			res.status(400).json({message: error.message});
+			if (querySnapshot.empty) {
+				const password = AuthenController.generatePassword()
+				try {
+					const transporter = await createTransporter()
+					await transporter.sendMail({
+						to: `${id}@student.hcmus.edu.vn`,
+						subject: 'Kích hoạt tài khoản',
+						html: `<h2>Chúc mừng, bạn đã kích hoạt hành công</h2>\n<h3>Mật khẩu là: </h3> ${password} \n<p>Hãy dùng nó để đăng nhập!</p>`,
+					})
+
+					const salt = await bcrypt.genSaltSync(10)
+					const hash = await bcrypt.hashSync(password, salt)
+					const data = {
+						id: id,
+						name: inforOfUserFromUS.name,
+						password: hash,
+						type: type,
+						typeOfReader: 'DocGiaA',
+						birthday: inforOfUserFromUS.birthday,
+						address: inforOfUserFromUS.address,
+						email: inforOfUserFromUS.email,
+					}
+
+					await addDoc(UserCollection, data)
+					return res.json({
+						msg: 'Đăng ký thành công',
+						statusCode: 200,
+						result: true,
+					})
+				} catch (er) {
+					console.log(er)
+				}
+			} else {
+				return res.json({
+					msg: 'Mã số đã được đăng ký. Hãy quên mật khẩu để lấy lại!',
+					statusCode: 200,
+					result: false,
+				})
+			}
+		} else {
+			return res.json({
+				msg: 'Mã số không tồn tại. Vui lòng nhập chính xác mã!',
+				statusCode: 200,
+				result: false,
+			})
 		}
 	}
 
@@ -109,19 +135,18 @@ class AuthenController {
 	// 	});
 	// }
 
-	// // [POST] /api/auth/log-out [refreshToken]
-	// async logOut(req, res) {
-	// 	const refreshToken = req.body.refreshToken;
+	// [POST] /api/auth/log-out [refresh_token]
+	async logOut(req, res) {
+		const refreshToken = req.body.refresh_token
 
-	// 	if (!refreshToken) return res.sendStatus(401);
+		if (!refreshToken) return res.sendStatus(401)
 
-	// 	jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, data) => {
-	// 		if (err) return res.sendStatus(403);
-	// 		await RefreshToken.deleteOne({token: refreshToken});
-
-	// 		return res.json({result: true});
-	// 	});
-	// }
+		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, data) => {
+			// if (err) return res.sendStatus(403)
+			// await RefreshToken.deleteOne({ token: refreshToken })
+			// return res.json({ result: true })
+		})
+	}
 }
 
-module.exports = new AuthenController();
+module.exports = new AuthenController()

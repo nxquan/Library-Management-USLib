@@ -5,6 +5,8 @@ const authenticateToken = require('../middleware/authenticateToken')
 const authenController = require('../app/controllers/AuthenController')
 
 Router.post('/register', authenController.register)
+Router.post('/login', authenController.login)
 Router.post('/logout', authenticateToken, authenController.logOut)
+Router.post('/refresh-token', authenController.refreshToken)
 
 module.exports = Router

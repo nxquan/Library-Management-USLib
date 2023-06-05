@@ -1,5 +1,5 @@
 const { firestore } = require('../../config/db')
-const { collection } = require('firebase/firestore/lite')
+const { collection, getDocs } = require('firebase/firestore/lite')
 
 class User {
 	constructor(id, name, password, type, typeOfReader, birthday, address, email) {
@@ -14,7 +14,19 @@ class User {
 	}
 }
 
+async function findOne(code) {
+	const usersCollectionRef = collection(firestore, 'Users')
+
+	// Lấy dữ liệu từ bộ sưu tập "users"
+	const querySnapshot = await getDocs(usersCollectionRef)
+	let rs = null
+	querySnapshot.forEach((doc) => {
+		if (doc.data().test === code) rs = doc.data()
+	})
+	return rs
+}
+
 const UserCollection = collection(firestore, `Users`)
 const USStudentCollection = collection(firestore, 'USStudents')
 
-module.exports = { User, UserCollection, USStudentCollection }
+module.exports = { User, UserCollection, findOne, USStudentCollection }

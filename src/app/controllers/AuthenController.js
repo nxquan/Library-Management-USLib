@@ -1,7 +1,10 @@
 const bcrypt = require('bcrypt')
-const { addDoc, getDoc, getDocs, query, where } = require('firebase/firestore/lite')
+const jwt = require('jsonwebtoken')
+const { doc, addDoc, getDoc, getDocs, collection } = require('firebase/firestore/lite')
 
-const { User, UserCollection, USStudentCollection } = require('../model/User')
+const { User, UserCollection, findOne } = require('../model/User')
+
+const RefreshToken = require('../model/RefreshToken')
 const { createTransporter } = require('../../config/mail')
 
 class AuthenController {
@@ -78,62 +81,67 @@ class AuthenController {
 	}
 
 	// [POST] /api/auth/login [phone, password]
-	// async login(req, res, next) {
-	// 	let existingUser = await User.findOne({phone: req.body.phone});
-	// 	if (!existingUser)
-	// 		return res.json({
-	// 			msg: 'Số điện thoại chưa đăng ký',
-	// 			msgEnglish: 'The phone number is not registered!',
-	// 			result: false,
-	// 		});
-	// 	let result = bcrypt.compareSync(req.body.password, existingUser.password);
+	async login(req, res, next) {
+		console.log(req.body.code)
+		let existingUser = await findOne(req.body.code)
+		if (!existingUser)
+			return res.json({
+				msg: 'Mã số chưa đăng ký',
+				msgEnglish: 'The code number is not registered!',
+				result: false,
+			})
+		let result = bcrypt.compareSync(req.body.password, existingUser.password)
 
-	// 	if (result) {
-	// 		const accessToken = jwt.sign({phone: req.body.phone}, process.env.ACCESS_TOKEN_SECRET, {
-	// 			expiresIn: '15m',
-	// 		});
+		if (result) {
+			const accessToken = jwt.sign({ code: req.body.code }, process.env.ACCESS_TOKEN_SECRET, {
+				expiresIn: '15m',
+			})
 
-	// 		const refreshToken = jwt.sign({phone: req.body.phone}, process.env.REFRESH_TOKEN_SECRET);
-	// 		await RefreshToken.create({token: refreshToken});
+			const refreshToken = jwt.sign({ code: req.body.code }, process.env.REFRESH_TOKEN_SECRET)
+			await RefreshToken.create({ token: refreshToken })
 
-	// 		res.cookie('access_token', accessToken, {
-	// 			maxAge: 1000 * 60 * 15,
-	// 			httpOnly: true,
-	// 		});
+			res.cookie('access_token', accessToken, {
+				maxAge: 1000 * 60 * 15,
+				httpOnly: true,
+			})
 
-	// 		return res.json({result: true, refreshToken});
-	// 	} else
-	// 		return res.json({
-	// 			msg: 'Mật khẩu không chính xác',
-	// 			msgEnglish: 'The password is not exactly!',
-	// 			status: false,
-	// 		});
-	// }
+			return res.json({ result: true, refreshToken })
+		} else
+			return res.json({
+				msg: 'Mật khẩu không chính xác',
+				msgEnglish: 'The password is not exactly!',
+				status: false,
+			})
+	}
 
 	// // [POST] /api/auth/refresh-token [phone, refreshToken]
-	// async refreshToken(req, res) {
-	// 	const refreshToken = req.body.refreshToken;
-	// 	if (!refreshToken) return res.sendStatus(401);
+	async refreshToken(req, res) {
+		const refreshToken = req.body.refreshToken
+		if (!refreshToken) return res.sendStatus(401)
 
-	// 	const result = await RefreshToken.findOne({token: refreshToken});
-	// 	if (!result) return res.sendStatus(403);
+		const result = await RefreshToken.findOne({ token: refreshToken })
+		if (!result) return res.sendStatus(403)
 
-	// 	jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, data) => {
-	// 		if (err) return res.sendStatus(403);
-	// 		const accessToken = jwt.sign({phone: req.body.phone}, process.env.ACCESS_TOKEN_SECRET, {
-	// 			expiresIn: '15m',
-	// 		});
+		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, data) => {
+			if (err) return res.sendStatus(403)
+			const accessToken = jwt.sign(
+				{ phone: req.body.phone },
+				process.env.ACCESS_TOKEN_SECRET,
+				{
+					expiresIn: '15m',
+				}
+			)
 
-	// 		res.cookie('access_token', accessToken, {
-	// 			maxAge: 1000 * 60 * 15,
-	// 			httpOnly: true,
-	// 		});
+			res.cookie('access_token', accessToken, {
+				maxAge: 1000 * 60 * 15,
+				httpOnly: true,
+			})
 
-	// 		return res.json({
-	// 			result: true,
-	// 		});
-	// 	});
-	// }
+			return res.json({
+				result: true,
+			})
+		})
+	}
 
 	// [POST] /api/auth/log-out [refresh_token]
 	async logOut(req, res) {

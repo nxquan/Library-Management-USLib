@@ -1,5 +1,7 @@
+const bookRouter = require('./book.route')
+
 function router(app) {
-	// app.use('/api/authen', controller)
+	app.use('/api/book', bookRouter)
 }
 
-module.exports = router;
+module.exports = router

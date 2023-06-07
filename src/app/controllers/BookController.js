@@ -10,6 +10,7 @@ class BookController {
 		const data = req.body;
 		const {value, error} = bookSchema.validate(data);
 
+		// validate the format of data
 		if (error) {
 			return res.json({error: error.details[0].message});
 		}
@@ -54,6 +55,7 @@ class BookController {
 			const files = req.files;
 			const docData = await Book.findOne(id);
 
+			const docData = await Book.findOne(id);
 			// Delete all photos in storage now
 			const oldPhotosURL = docData.photos;
 			await Promise.all(

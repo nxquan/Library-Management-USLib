@@ -23,6 +23,4 @@ Router.delete('/:id', bookController.deleteBook);
 Router.post('/', upload.array('photos', 12), bookController.createBook);
 Router.get('/', bookController.getAll);
 
-// Router.post('/reserve', bookController.reserveBook)
-
 module.exports = Router;

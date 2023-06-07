@@ -46,3 +46,7 @@ Before you code anything, you should pull source code from github
 4. Enjoy your code
 
 To format code: Run command "npm run format" for manually formatting code
+
+## Fix some errors
+
+1. Git pre-commit hook is not set executable, use `chmod ug+x .husky/\*` to allocate permission

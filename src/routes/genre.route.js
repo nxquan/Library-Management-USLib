@@ -1,12 +1,13 @@
-const express = require('express');
-const Router = express.Router();
+const express = require('express')
+const Router = express.Router()
+const genreController = require('../app/controllers/GenreController')
 
-const genreController = require('../app/controllers/GenreController');
+const authenticateToken = require('../middleware/authenticateToken')
 
-Router.post('/', genreController.createGenre);
-Router.delete('/:id', genreController.deleteGenre);
+Router.post('/', authenticateToken, genreController.createGenre)
+Router.delete('/:id', authenticateToken, genreController.deleteGenre)
 
-Router.get('/', genreController.getAll);
-Router.patch('/:id', genreController.updateGenre);
+Router.get('/', authenticateToken, genreController.getAll)
+Router.patch('/:id', authenticateToken, genreController.updateGenre)
 
-module.exports = Router;
+module.exports = Router

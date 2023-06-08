@@ -5,14 +5,8 @@
   "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --inspect src/index.js",
-    "startAuth": "nodemon --inspect src/authenServer.js",
-    "format": "prettier --single-quote --trailing-comma all --use-tabs --tab-width 4 --no-bracket-spacing --print-width 120 --write src/**/*.{json,js,scss}",
-    "format-stage": "lint-staged",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "src/**/*.{json,js,scss}": "prettier --single-quote --trailing-comma all --use-tabs --tab-width 4 --no-bracket-spacing --print-width 120 --write"
+    "start": "node src/index.js",
+    "startAuth": "node src/authenServer.js"
   },
   "author": "",
   "license": "ISC",
@@ -27,12 +21,5 @@
     "jsonwebtoken": "^9.0.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.3"
-  },
-  "devDependencies": {
-    "husky": "^8.0.0",
-    "lint-staged": "^13.2.2",
-    "morgan": "^1.10.0",
-    "nodemon": "^2.0.22",
-    "prettier": "^2.8.8"
   }
 }

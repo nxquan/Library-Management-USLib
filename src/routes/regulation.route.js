@@ -1,12 +1,13 @@
-const express = require('express');
-const Router = express.Router();
+const express = require('express')
+const Router = express.Router()
+const regulationController = require('../app/controllers/RegulationController')
 
-const regulationController = require('../app/controllers/RegulationController');
+const authenticateToken = require('../middleware/authenticateToken')
 
-Router.post('/', regulationController.createRegulation);
-Router.delete('/:id', regulationController.deleteRegulation);
+Router.post('/', authenticateToken, regulationController.createRegulation)
+Router.delete('/:id', authenticateToken, regulationController.deleteRegulation)
 
-Router.get('/', regulationController.getAll);
-Router.patch('/:id', regulationController.updateRegulation);
+Router.get('/', authenticateToken, regulationController.getAll)
+Router.patch('/:id', authenticateToken, regulationController.updateRegulation)
 
-module.exports = Router;
+module.exports = Router

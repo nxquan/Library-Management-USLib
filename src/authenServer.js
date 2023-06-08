@@ -1,9 +1,6 @@
 const express = require('express')
 const cors = require('cors')
 const app = express()
-const morgan = require('morgan')
-const nodemailer = require('nodemailer')
-
 require('dotenv').config()
 const authRouter = require('./routes/authen.route')
 const port = process.env.AUTHEN_PORT || 5500
@@ -23,9 +20,6 @@ app.use(
 		extended: true,
 	})
 )
-
-// Config logger for server. When client call any API, server will log
-// app.use(morgan('combined'));
 
 // Handle routes
 app.use('/api/auth', authRouter)

@@ -1,5 +1,13 @@
 const { firestore } = require('../../config/db');
-const { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs } = require('firebase/firestore/lite');
+const {
+	collection,
+	addDoc,
+	doc,
+	getDoc,
+	updateDoc,
+	deleteDoc,
+	getDocs,
+} = require('firebase/firestore/lite');
 const Book = require('./Book');
 
 class ReserveBook {

@@ -1,8 +1,27 @@
 const { firestore } = require('../../config/db');
-const { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs } = require('firebase/firestore/lite');
+const {
+	collection,
+	addDoc,
+	doc,
+	getDoc,
+	updateDoc,
+	deleteDoc,
+	getDocs,
+} = require('firebase/firestore/lite');
 
 class Book {
-	constructor(id, name, genre, photos, author, publishedYear, publisher, importedDate, status, number) {
+	constructor(
+		id,
+		name,
+		genre,
+		photos,
+		author,
+		publishedYear,
+		publisher,
+		importedDate,
+		status,
+		number,
+	) {
 		this.id = id || '';
 		this.name = name;
 		this.photos = photos;

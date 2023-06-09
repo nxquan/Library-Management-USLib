@@ -1,5 +1,13 @@
 const { firestore } = require('../../config/db');
-const { collection, addDoc, doc, getDocs, deleteDoc, query, where } = require('firebase/firestore/lite');
+const {
+	collection,
+	addDoc,
+	doc,
+	getDocs,
+	deleteDoc,
+	query,
+	where,
+} = require('firebase/firestore/lite');
 
 class RefreshToken {
 	static refreshTokenRef = collection(firestore, 'refresh_tokens');

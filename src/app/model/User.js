@@ -5,7 +5,7 @@ class User {
 	static userRef = collection(firestore, `users`);
 	static userUSRef = collection(firestore, 'us_students');
 
-	constructor(id, name, password, type, typeOfReader, birthday, address, email) {
+	constructor(id, name, password, type, typeOfReader, birthday, address, email, createdAt) {
 		this.id = id;
 		this.name = name;
 		this.password = password;
@@ -14,6 +14,7 @@ class User {
 		this.birthday = birthday;
 		this.address = address;
 		this.email = email;
+		this.createdAt = createdAt;
 	}
 
 	//CRUD

@@ -39,6 +39,7 @@ class AuthenController {
 
 					const salt = await bcrypt.genSaltSync(10);
 					const hash = await bcrypt.hashSync(password, salt);
+					const currentDate = new Date();
 					const data = {
 						id: id,
 						name: inforOfUserFromUS.name,
@@ -48,6 +49,15 @@ class AuthenController {
 						birthday: inforOfUserFromUS.birthday,
 						address: inforOfUserFromUS.address,
 						email: inforOfUserFromUS.email,
+						createAt: `${
+							currentDate.getDate() < 10
+								? '0' + currentDate.getDate()
+								: currentDate.getDate()
+						}/${
+							currentDate.getMonth() + 1 < 10
+								? '0' + (currentDate.getMonth() + 1)
+								: currentDate.getMonth() + 1
+						}/${currentDate.getFullYear()}`,
 					};
 
 					await User.createOne(data);

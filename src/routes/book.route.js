@@ -5,7 +5,11 @@ const bookController = require('../app/controllers/BookController');
 const multer = require('multer');
 
 function imageFilter(req, file, cb) {
-	if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png' || file.mimetype === 'image/jpg') {
+	if (
+		file.mimetype === 'image/jpeg' ||
+		file.mimetype === 'image/png' ||
+		file.mimetype === 'image/jpg'
+	) {
 		cb(null, true);
 	} else {
 		cb(null, false);

@@ -96,7 +96,11 @@ class BookController {
 			if (result) {
 				return res.json({ msg: 'Xóa thành công!', status: 204, result: true });
 			} else {
-				return res.json({ msg: 'Không tim thấy độc giả để xóa', status: 204, result: false });
+				return res.json({
+					msg: 'Không tim thấy độc giả để xóa',
+					status: 204,
+					result: false,
+				});
 			}
 		} catch (er) {
 			return res.json({

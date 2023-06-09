@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
-const morgan = require('morgan');
+// const morgan = require('morgan');
 const router = require('./routes');
 require('dotenv').config();
 
@@ -26,7 +26,7 @@ app.use(
 );
 
 // Config logger for server. When client call any API, server will log
-app.use(morgan('combined'));
+// app.use(morgan('combined'));
 
 router(app);
 

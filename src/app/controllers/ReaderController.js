@@ -19,7 +19,11 @@ class ReaderController {
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -33,17 +37,21 @@ class ReaderController {
 			if (updateReader)
 				return res.json({
 					msg: 'Cập nhật thẻ độc giả thành công!',
-					status: 204,
+					status: 201,
 					result: true,
 				});
 			else
 				return res.json({
 					msg: 'Cập nhật thẻ độc giả thất bại! Vui lòng thử lại.',
-					status: 204,
+					status: 201,
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -55,17 +63,21 @@ class ReaderController {
 			if (deleteReader)
 				return res.json({
 					msg: 'Xoá thẻ độc giả thành công!',
-					status: 200,
+					status: 204,
 					result: true,
 				});
 			else
 				return res.json({
 					msg: 'Xoá thẻ độc giả thất bại! Vui lòng thử lại.',
-					status: 200,
+					status: 204,
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -89,7 +101,11 @@ class ReaderController {
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -110,7 +126,11 @@ class ReaderController {
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -133,7 +153,11 @@ class ReaderController {
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 }

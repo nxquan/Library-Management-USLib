@@ -12,7 +12,7 @@ function imageFilter(req, file, cb) {
 		return cb(new Error('Only .png, .jpg and .jpeg format allowed!'));
 	}
 }
-const upload = multer({storage: multer.memoryStorage(), fileFilter: imageFilter});
+const upload = multer({ storage: multer.memoryStorage(), fileFilter: imageFilter });
 
 Router.get('/search', bookController.search);
 

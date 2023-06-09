@@ -1,5 +1,5 @@
-const {firestore} = require('../../config/db');
-const {collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc, doc} = require('firebase/firestore/lite');
+const { firestore } = require('../../config/db');
+const { collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc, doc } = require('firebase/firestore/lite');
 
 class Reader {
 	static readerRef = collection(firestore, 'readers');

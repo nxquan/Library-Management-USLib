@@ -1,5 +1,5 @@
-const {firestore} = require('../../config/db');
-const {collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs} = require('firebase/firestore/lite');
+const { firestore } = require('../../config/db');
+const { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs } = require('firebase/firestore/lite');
 const Book = require('./Book');
 
 class ReserveBook {
@@ -8,7 +8,7 @@ class ReserveBook {
 	static async createReserve(data) {
 		try {
 			await addDoc(this.reserveRef, data);
-			Book.updateOne(data.idBook, {status: 'Đã được đặt trước'});
+			Book.updateOne(data.idBook, { status: 'Đã được đặt trước' });
 			return true;
 		} catch (er) {
 			return false;

@@ -14,21 +14,21 @@ class GenreController {
 				await Genre.createOne(data);
 				return res.json({
 					msg: 'Tạo thành công',
-					statusCode: 200,
+					status: 201,
 					result: true,
 				});
 			} else {
 				return res.json({
 					msg: 'Loại sách đã tồn tại',
-					statusCode: 200,
+					status: 200,
 					result: true,
 				});
 			}
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Vui lòng thử lại sau.',
-				statusCode: 200,
-				result: true,
+				status: 500,
+				result: false,
 			});
 		}
 	}
@@ -37,17 +37,25 @@ class GenreController {
 		const id = req.params.id;
 
 		try {
-			await Genre.deleteOne(id);
-			return res.json({
-				msg: 'Xóa thành công',
-				statusCode: 200,
-				result: true,
-			});
+			const result = await Genre.deleteOne(id);
+			if (result) {
+				return res.json({
+					msg: 'Xóa thành công',
+					status: 204,
+					result: true,
+				});
+			} else {
+				return res.json({
+					msg: 'Không tìm thấy loại sách để xóa',
+					status: 204,
+					result: false,
+				});
+			}
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Vui lòng thử lại sau.',
-				statusCode: 200,
-				result: true,
+				status: 500,
+				result: false,
 			});
 		}
 	}
@@ -59,14 +67,14 @@ class GenreController {
 				data: {
 					genres,
 				},
-				statusCode: 200,
+				status: 200,
 				result: true,
 			});
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Vui lòng thử lại sau.',
-				statusCode: 200,
-				result: true,
+				status: 500,
+				result: false,
 			});
 		}
 	}
@@ -79,13 +87,13 @@ class GenreController {
 			await Genre.updateOne(id, newData);
 			return res.json({
 				msg: 'Cập nhật thành công.',
-				statusCode: 200,
+				status: 201,
 				result: true,
 			});
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Vui lòng thử lại sau.',
-				statusCode: 200,
+				status: 500,
 				result: true,
 			});
 		}

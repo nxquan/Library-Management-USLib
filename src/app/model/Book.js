@@ -1,8 +1,8 @@
-const {firestore} = require('../../config/db');
-const {collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs} = require('firebase/firestore/lite');
+const { firestore } = require('../../config/db');
+const { collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs } = require('firebase/firestore/lite');
 
 class Book {
-	constructor(id, name, genre, photos, author, publishedYear, publisher, importedDate, status) {
+	constructor(id, name, genre, photos, author, publishedYear, publisher, importedDate, status, number) {
 		this.id = id || '';
 		this.name = name;
 		this.photos = photos;
@@ -12,6 +12,7 @@ class Book {
 		this.publisher = publisher;
 		this.importedDate = importedDate;
 		this.status = status;
+		this.number = number;
 	}
 
 	static bookRef = collection(firestore, 'books');
@@ -39,6 +40,7 @@ class Book {
 		try {
 			const docRef = doc(this.bookRef, id);
 			await deleteDoc(docRef);
+			return true;
 		} catch (er) {
 			return false;
 		}

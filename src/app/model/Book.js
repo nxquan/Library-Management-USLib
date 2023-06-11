@@ -1,4 +1,6 @@
+const { serverTimestamp, setDoc } = require('firebase/firestore/lite');
 const { firestore } = require('../../config/db');
+
 const {
 	collection,
 	addDoc,
@@ -38,8 +40,17 @@ class Book {
 
 	// CRUD here!
 	static async createOne(data) {
+		const id = data.id;
+		delete data.id;
+		const document = {
+			...data,
+			createdAt: serverTimestamp(),
+			updatedAt: serverTimestamp(),
+		};
+
 		try {
-			await addDoc(this.bookRef, data);
+			const newDocRef = doc(this.bookRef, id);
+			await setDoc(newDocRef, document);
 			return true;
 		} catch (er) {
 			return false;
@@ -47,9 +58,14 @@ class Book {
 	}
 
 	static async updateOne(id, newData) {
+		const document = {
+			...newData,
+			updatedAt: serverTimestamp(),
+		};
+
 		try {
 			const docRef = doc(this.bookRef, id);
-			await updateDoc(docRef, newData);
+			await updateDoc(docRef, document);
 		} catch (er) {
 			return false;
 		}

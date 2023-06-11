@@ -1,6 +1,8 @@
 const Genre = require('../model/Genre');
 
 class GenreController {
+
+	// [POST] /api/genre
 	async createGenre(req, res) {
 		const data = req.body;
 
@@ -33,6 +35,8 @@ class GenreController {
 		}
 	}
 
+	
+	// [DELETE] /api/genre/:id
 	async deleteGenre(req, res) {
 		const id = req.params.id;
 
@@ -60,6 +64,7 @@ class GenreController {
 		}
 	}
 
+	// [GET] /api/genre
 	async getAll(req, res) {
 		try {
 			const genres = await Genre.findAll();
@@ -79,6 +84,7 @@ class GenreController {
 		}
 	}
 
+	// [PATCH] /api/genre/:id
 	async updateGenre(req, res) {
 		const id = req.params.id;
 		const newData = req.body;

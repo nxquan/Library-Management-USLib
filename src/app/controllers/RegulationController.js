@@ -1,6 +1,8 @@
 const Regulation = require('../model/Regulation');
 
 class RegulationController {
+
+	// [POST] api/regulation
 	async createRegulation(req, res) {
 		const data = req.body;
 
@@ -30,6 +32,7 @@ class RegulationController {
 		}
 	}
 
+	// [DELETE] api/regulation/:id
 	async deleteRegulation(req, res) {
 		const id = req.params.id;
 
@@ -57,6 +60,7 @@ class RegulationController {
 		}
 	}
 
+	// [GET] api/regulation
 	async getAll(req, res) {
 		try {
 			const regulations = await Regulation.findAll();
@@ -76,6 +80,7 @@ class RegulationController {
 		}
 	}
 
+	// [PATCH] api/regulation/:id
 	async updateRegulation(req, res) {
 		const id = req.params.id;
 		const newData = req.body;

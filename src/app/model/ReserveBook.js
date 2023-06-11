@@ -24,4 +24,4 @@ class ReserveBook {
 	}
 }
 
-module.exports = new ReserveBook();
+module.exports = ReserveBook;

@@ -167,13 +167,12 @@ class RecordController {
 		}
 	}
 
-	// [GET] /api/record
-	async getAll(req, res) {
-		const data = req.body;
-		const studentId = data.student_id;
-		const date = data.date;
+	// [GET] /api/record/:student_id
+	async getSome(req, res) {
+		const studentId = req.params.student_id
+		
 		try {
-			const records = await Record.findOne(['student_id', 'date'], [studentId, date]);
+			const records = await Record.findOne(['student_id'], [studentId]);
 			if(records) {
 				return res.json({
 					data: {
@@ -198,8 +197,6 @@ class RecordController {
 			})
 		}
 	}
-
-
 }
 
 module.exports = new RecordController();

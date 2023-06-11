@@ -106,6 +106,31 @@ class Record {
 		}
 	}
 
+	static async findSome(fields, values) {
+		try {
+			const conditions = Array.from(fields).map((field, index) => {
+				return where(field, '==', values[index]);
+			});
+
+			const result = []
+			const queryResult = query(this.recordRef, ...conditions);
+			const querySnapshots = await getDocs(queryResult);
+
+			querySnapshots.forEach(doc => {
+				const data = doc.data()
+				data.id = data
+				result.push(doc.data())
+			})
+
+			return result
+			
+		} catch (er) {
+			console.log(er);
+			return null;
+		}
+	}
+
+
 	static async updateOne(id, newData) {
 		try {
 			const docRef = doc(this.recordRef, id);

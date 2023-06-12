@@ -1,6 +1,5 @@
 const express = require('express');
 const Router = express.Router();
-const authenticateToken = require('../middleware/authenticateToken');
 const readerController = require('../app/controllers/ReaderController');
 
 Router.post('/', readerController.createReader);

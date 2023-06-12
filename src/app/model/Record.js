@@ -112,24 +112,22 @@ class Record {
 				return where(field, '==', values[index]);
 			});
 
-			const result = []
+			const result = [];
 			const queryResult = query(this.recordRef, ...conditions);
 			const querySnapshots = await getDocs(queryResult);
 
-			querySnapshots.forEach(doc => {
-				const data = doc.data()
-				data.id = data
-				result.push(doc.data())
-			})
+			querySnapshots.forEach((doc) => {
+				const data = doc.data();
+				data.id = data;
+				result.push(doc.data());
+			});
 
-			return result
-			
+			return result;
 		} catch (er) {
 			console.log(er);
 			return null;
 		}
 	}
-
 
 	static async updateOne(id, newData) {
 		try {
@@ -138,6 +136,24 @@ class Record {
 			return true;
 		} catch (er) {
 			return false;
+		}
+	}
+
+	static async getAll() {
+		try {
+			const snapDocs = await getDocs(this.recordRef);
+			let records = [];
+
+			snapDocs.forEach((doc) => {
+				let data = doc.data();
+				data.id = doc.id;
+
+				records.push(data);
+			});
+
+			return records;
+		} catch (er) {
+			return null;
 		}
 	}
 }

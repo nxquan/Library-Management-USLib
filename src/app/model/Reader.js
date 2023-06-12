@@ -12,7 +12,7 @@ const {
 class Reader {
 	static readerRef = collection(firestore, 'readers');
 
-	constructor(id, fullName, typeOfReader, birthday, address, email, dateCreatedCard) {
+	constructor(id = '', fullName, typeOfReader, birthday, address, email, dateCreatedCard) {
 		this.id = id;
 		this.fullName = fullName;
 		this.typeOfReader = typeOfReader;
@@ -103,8 +103,9 @@ class Reader {
 
 			snapDocs.forEach((doc) => {
 				let data = doc.data();
+				let idReader = data.id;
 				let reader = new Reader(
-					data.id,
+					idReader,
 					data.fullName,
 					data.typeOfReader,
 					data.birthday,

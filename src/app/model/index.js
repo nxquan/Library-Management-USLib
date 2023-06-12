@@ -5,7 +5,7 @@ const Reader = require('./Reader');
 const Record = require('./Record');
 const RefreshToken = require('./RefreshToken');
 const Regulation = require('./Regulation');
-const ReserveBook = require('./ReserveBook');
+const Interaction = require('./Interaction');
 
 module.exports = {
 	Book,
@@ -15,5 +15,5 @@ module.exports = {
 	Record,
 	RefreshToken,
 	Regulation,
-	ReserveBook,
+	Interaction,
 };

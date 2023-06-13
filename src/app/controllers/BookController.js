@@ -1,18 +1,18 @@
 const Book = require('../model/Book')
 
-const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = require('firebase/storage')
-const storage = getStorage()
-const { bookSchema } = require('../../config/validate')
+const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = require('firebase/storage');
+const storage = getStorage();
+const { bookSchema } = require('../../config/validate');
 
 class BookController {
 	// [POST] /api/book
 	async createBook(req, res) {
-		const data = req.body
-		const { value, error } = bookSchema.validate(data)
+		const data = req.body;
+		const { value, error } = bookSchema.validate(data);
 
 		// validate the format of data
 		if (error) {
-			return res.json({ error: error.details[0].message })
+			return res.json({ error: error.details[0].message });
 		}
 
 		const photos = []
@@ -32,11 +32,11 @@ class BookController {
 				photos: photos,
 			})
 
-			return res.json({ msg: 'Tạo thành công!', statusCode: 200, result: true })
+			return res.json({ msg: 'Tạo thành công!', status: 200, result: true });
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Hãy thử lại sau.',
-				statusCode: 200,
+				status: 200,
 				result: false,
 			})
 		}
@@ -54,7 +54,6 @@ class BookController {
 		if (isChangingPhoto) {
 			const files = req.files
 
-			const docData = await Book.findOne(id)
 			// Delete all photos in storage now
 			const oldPhotosURL = docData.photos
 			await Promise.all(
@@ -76,12 +75,12 @@ class BookController {
 		}
 
 		try {
-			await Book.updateOne(id, data)
-			return res.json({ msg: 'Cập nhật thành công!', statusCode: 200, result: true })
+			await Book.updateOne(id, data);
+			return res.json({ msg: 'Cập nhật thành công!', status: 200, result: true });
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Hãy thử lại sau.',
-				statusCode: 200,
+				status: 200,
 				result: false,
 			})
 		}
@@ -92,12 +91,20 @@ class BookController {
 		const id = req.params.id
 
 		try {
-			await Book.deleteOne(id)
-			return res.json({ msg: 'Xóa thành công!', statusCode: 200, result: true })
+			const result = await Book.deleteOne(id);
+			if (result) {
+				return res.json({ msg: 'Xóa thành công!', status: 204, result: true });
+			} else {
+				return res.json({
+					msg: 'Không tim thấy độc giả để xóa',
+					status: 204,
+					result: false,
+				});
+			}
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Hãy thử lại sau.',
-				statusCode: 200,
+				status: 500,
 				result: false,
 			})
 		}
@@ -111,22 +118,29 @@ class BookController {
 			data: {
 				books,
 			},
-			statusCode: 200,
+			status: 200,
 			result: true,
 		})
 	}
 
 	// [GET] /api/book/:id
 	async getOne(req, res) {
-		const book = await Book.findOne(req.params.id)
-
-		return res.json({
-			data: {
-				book,
-			},
-			statusCode: 200,
-			result: true,
-		})
+		const book = await Book.findOne(req.params.id);
+		if (!book) {
+			return res.json({
+				data: 'Không tin thấy sách này!',
+				status: 200,
+				result: false,
+			});
+		} else {
+			return res.json({
+				data: {
+					book,
+				},
+				status: 200,
+				result: true,
+			});
+		}
 	}
 
 	// [GET] /api/book/search
@@ -141,15 +155,15 @@ class BookController {
 					books: result,
 					size: result.length,
 					result: true,
-					statusCode: 200,
+					status: 200,
 				},
 			})
 		} catch (er) {
 			return res.json({
 				msg: 'Xảy ra lỗi hệ thống! Hãy thử lại sau.',
 				result: false,
-				statusCode: 200,
-			})
+				status: 500,
+			});
 		}
 	}
 

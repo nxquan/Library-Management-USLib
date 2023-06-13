@@ -9,25 +9,26 @@ const port = process.env.AUTHEN_PORT || 5500
 app.use(
 	cors({
 		origin: process.env.URL_CLIENT,
-	})
-)
+		credentials: true,
+	}),
+);
 
 // Allow client to send data with application/json
-app.use(express.json())
+app.use(express.json());
 // Using middleware to parse data of body (client will use POST method)
 app.use(
 	express.urlencoded({
 		extended: true,
-	})
-)
+	}),
+);
 
 // Handle routes
-app.use('/api/auth', authRouter)
+app.use('/api/auth', authRouter);
 
 app.get('/', (req, res) => {
-	res.send(`Server Authentication is listening on port ${port}`)
-})
+	res.send(`Server Authentication is listening on port ${port}`);
+});
 
 app.listen(port, () => {
-	console.log(`Server Authentication is listening on port ${port}`)
-})
+	console.log(`Server Authentication is listening on port ${port}`);
+});

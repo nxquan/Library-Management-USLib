@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 const User = require('../model/User')
 const RefreshToken = require('../model/RefreshToken')
 
-const { createTransporter } = require('../../config/mail')
+const { createTransporter } = require('../../config/mail');
 
 class AuthenController {
 	static generatePassword() {
@@ -20,7 +20,7 @@ class AuthenController {
 
 	// [POST] /api/auth/register [id, type]
 	async register(req, res, next) {
-		const { id, type } = req.body
+		const { id, type } = req.body;
 		// Check if id exists in University of Science
 		const inforOfUserFromUS = await User.findUSOne('id', id)
 
@@ -37,8 +37,9 @@ class AuthenController {
 						html: `<h2>Chúc mừng, bạn đã kích hoạt hành công</h2>\n<h3>Mật khẩu là: </h3> ${password} \n<p>Hãy dùng nó để đăng nhập!</p>`,
 					})
 
-					const salt = await bcrypt.genSaltSync(10)
-					const hash = await bcrypt.hashSync(password, salt)
+					const salt = await bcrypt.genSaltSync(10);
+					const hash = await bcrypt.hashSync(password, salt);
+					const currentDate = new Date();
 					const data = {
 						id: id,
 						name: inforOfUserFromUS.name,
@@ -48,13 +49,22 @@ class AuthenController {
 						birthday: inforOfUserFromUS.birthday,
 						address: inforOfUserFromUS.address,
 						email: inforOfUserFromUS.email,
-					}
+						createAt: `${
+							currentDate.getDate() < 10
+								? '0' + currentDate.getDate()
+								: currentDate.getDate()
+						}/${
+							currentDate.getMonth() + 1 < 10
+								? '0' + (currentDate.getMonth() + 1)
+								: currentDate.getMonth() + 1
+						}/${currentDate.getFullYear()}`,
+					};
 
 					await User.createOne(data)
 
 					return res.json({
 						msg: 'Đăng ký thành công',
-						statusCode: 200,
+						status: 201,
 						result: true,
 					})
 				} catch (er) {
@@ -63,14 +73,14 @@ class AuthenController {
 			} else {
 				return res.json({
 					msg: 'Mã số đã được đăng ký. Hãy quên mật khẩu để lấy lại!',
-					statusCode: 200,
+					status: 200,
 					result: false,
 				})
 			}
 		} else {
 			return res.json({
 				msg: 'Mã số không tồn tại. Vui lòng nhập chính xác mã!',
-				statusCode: 200,
+				status: 200,
 				result: false,
 			})
 		}
@@ -93,19 +103,18 @@ class AuthenController {
 				expiresIn: '15m',
 			})
 
-			const refreshToken = jwt.sign({ id: req.body.id }, process.env.REFRESH_TOKEN_SECRET)
-			await RefreshToken.create({ token: refreshToken })
+			const refreshToken = jwt.sign({ id: req.body.id }, process.env.REFRESH_TOKEN_SECRET);
+			await RefreshToken.create({ token: refreshToken });
 
 			res.cookie('access_token', accessToken, {
 				maxAge: 1000 * 60 * 15,
 				httpOnly: true,
 			})
 
-			return res.json({ result: true, refreshToken })
+			return res.json({ result: true, refreshToken });
 		} else
 			return res.json({
 				msg: 'Mật khẩu không chính xác',
-				msgEnglish: 'The password is not exactly!',
 				status: false,
 			})
 	}
@@ -145,11 +154,11 @@ class AuthenController {
 		jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, data) => {
 			if (err) res.sendStatus(403) //Forbidden
 			try {
-				await RefreshToken.deleteOne('token', refreshToken)
-				return res.json({ statusCode: 200, result: true })
+				await RefreshToken.deleteOne('token', refreshToken);
+				return res.json({ status: 200, result: true });
 			} catch (er) {
-				console.log(er)
-				return res.json({ statusCode: 200, result: false })
+				console.log(er);
+				return res.json({ status: 200, result: false });
 			}
 		})
 	}
@@ -158,7 +167,7 @@ class AuthenController {
 	async changePassword(req, res) {
 		const inforOfUser = await User.findOne('id', req.body.id)
 		if (!inforOfUser) {
-			return res.json({ msg: 'ID không chính xác', statusCode: 200 })
+			return res.json({ msg: 'ID không chính xác', status: 200 });
 		}
 		let result = await bcrypt.compareSync(req.body.current_password, inforOfUser.password)
 
@@ -170,9 +179,9 @@ class AuthenController {
 				password: hash,
 			})
 
-			return res.json({ msg: 'Thay đổi mật khẩu thành công', statusCode: 200, result: true })
+			return res.json({ msg: 'Thay đổi mật khẩu thành công', status: 200, result: false });
 		} else {
-			return res.json({ msg: 'Mật khẩu cũ không chính xác', statusCode: 200, result: true })
+			return res.json({ msg: 'Mật khẩu cũ không chính xác', status: 200, result: false });
 		}
 	}
 }

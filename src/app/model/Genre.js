@@ -1,4 +1,4 @@
-const {firestore} = require('../../config/db');
+const { firestore } = require('../../config/db');
 const {
 	addDoc,
 	getDoc,

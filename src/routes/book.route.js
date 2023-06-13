@@ -11,13 +11,13 @@ function imageFilter(req, file, cb) {
 		file.mimetype === 'image/png' ||
 		file.mimetype === 'image/jpg'
 	) {
-		cb(null, true)
+		cb(null, true);
 	} else {
 		cb(null, false)
 		return cb(new Error('Only .png, .jpg and .jpeg format allowed!'))
 	}
 }
-const upload = multer({ storage: multer.memoryStorage(), fileFilter: imageFilter })
+const upload = multer({ storage: multer.memoryStorage(), fileFilter: imageFilter });
 
 Router.get('/search', bookController.search)
 

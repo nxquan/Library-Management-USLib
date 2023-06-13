@@ -1,8 +1,29 @@
-const {firestore} = require('../../config/db');
-const {collection, addDoc, doc, getDoc, updateDoc, deleteDoc, getDocs} = require('firebase/firestore/lite');
+const { serverTimestamp, setDoc } = require('firebase/firestore/lite');
+const { firestore } = require('../../config/db');
+
+const {
+	collection,
+	addDoc,
+	doc,
+	getDoc,
+	updateDoc,
+	deleteDoc,
+	getDocs,
+} = require('firebase/firestore/lite');
 
 class Book {
-	constructor(id, name, genre, photos, author, publishedYear, publisher, importedDate, status) {
+	constructor(
+		id,
+		name,
+		genre,
+		photos,
+		author,
+		publishedYear,
+		publisher,
+		importedDate,
+		status,
+		number,
+	) {
 		this.id = id || '';
 		this.name = name;
 		this.photos = photos;
@@ -12,14 +33,24 @@ class Book {
 		this.publisher = publisher;
 		this.importedDate = importedDate;
 		this.status = status;
+		this.number = number;
 	}
 
 	static bookRef = collection(firestore, 'books');
 
 	// CRUD here!
 	static async createOne(data) {
+		const id = data.id;
+		delete data.id;
+		const document = {
+			...data,
+			createdAt: serverTimestamp(),
+			updatedAt: serverTimestamp(),
+		};
+
 		try {
-			await addDoc(this.bookRef, data);
+			const newDocRef = doc(this.bookRef, id);
+			await setDoc(newDocRef, document);
 			return true;
 		} catch (er) {
 			return false;
@@ -27,9 +58,14 @@ class Book {
 	}
 
 	static async updateOne(id, newData) {
+		const document = {
+			...newData,
+			updatedAt: serverTimestamp(),
+		};
+
 		try {
 			const docRef = doc(this.bookRef, id);
-			await updateDoc(docRef, newData);
+			await updateDoc(docRef, document);
 		} catch (er) {
 			return false;
 		}
@@ -39,6 +75,7 @@ class Book {
 		try {
 			const docRef = doc(this.bookRef, id);
 			await deleteDoc(docRef);
+			return true;
 		} catch (er) {
 			return false;
 		}

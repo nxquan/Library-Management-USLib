@@ -1,4 +1,4 @@
-const Joi = require('joi')
+const Joi = require('joi');
 
 const bookSchema = Joi.object({
 	id: Joi.string().default(''),
@@ -10,6 +10,6 @@ const bookSchema = Joi.object({
 	publisher: Joi.string().required(),
 	imported_date: Joi.string().required(),
 	status: Joi.string().required(),
-})
+});
 
-module.exports = { bookSchema }
+module.exports = { bookSchema };

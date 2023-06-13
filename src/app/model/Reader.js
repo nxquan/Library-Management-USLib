@@ -1,10 +1,18 @@
-const {firestore} = require('../../config/db');
-const {collection, getDoc, getDocs, addDoc, updateDoc, deleteDoc, doc} = require('firebase/firestore/lite');
+const { firestore } = require('../../config/db');
+const {
+	collection,
+	getDoc,
+	getDocs,
+	addDoc,
+	updateDoc,
+	deleteDoc,
+	doc,
+} = require('firebase/firestore/lite');
 
 class Reader {
 	static readerRef = collection(firestore, 'readers');
 
-	constructor(id, fullName, typeOfReader, birthday, address, email, dateCreatedCard) {
+	constructor(id = '', fullName, typeOfReader, birthday, address, email, dateCreatedCard) {
 		this.id = id;
 		this.fullName = fullName;
 		this.typeOfReader = typeOfReader;
@@ -56,7 +64,7 @@ class Reader {
 		}
 	}
 
-	static async findSome(filtẻ = {}) {
+	static async findSome(filter = {}) {
 		try {
 			const snapDocs = await getDocs(this.readerRef);
 			const readers = [];
@@ -95,8 +103,9 @@ class Reader {
 
 			snapDocs.forEach((doc) => {
 				let data = doc.data();
+				let idReader = data.id;
 				let reader = new Reader(
-					data.id,
+					idReader,
 					data.fullName,
 					data.typeOfReader,
 					data.birthday,

@@ -1,27 +1,103 @@
-const Reader = require('../model/Reader');
+const { json } = require('express');
+const { Reader, Regulation } = require('../model');
+const { date } = require('joi');
+const { check } = require('prettier');
 
 class ReaderController {
+	static checkAge(birthday, condittion) {
+		const currentDate = new Date();
+		const parts = birthday.split('/');
+		const formattedBirthday = `${parts[2]}-${parts[1]}-${parts[0]}`;
+		const birthDate = new Date(formattedBirthday);
+
+		// Lấy số năm và tháng từ ngày sinh
+		const birthYear = birthDate.getFullYear();
+		const birthMonth = birthDate.getMonth();
+
+		// Lấy số năm và tháng từ ngày hiện tại
+		const currentYear = currentDate.getFullYear();
+		const currentMonth = currentDate.getMonth();
+
+		// Tính toán tuổi
+		let age = currentYear - birthYear;
+
+		// Kiểm tra xem ngày sinh có diễn ra sau ngày hiện tại trong cùng năm và tháng không
+		if (
+			currentMonth < birthMonth ||
+			(currentMonth === birthMonth && currentDate.getDate() < birthDate.getDate())
+		) {
+			age--;
+		}
+
+		if (age <= condittion) return true;
+		else return false;
+	}
+
 	// [POST] /api/reader
 	async createReader(req, res) {
+		const keyOfReader = [
+			'fullName',
+			'address',
+			'birthday',
+			'email',
+			'typeOfReader',
+			'dateCreatedCard',
+		];
+
 		const data = req.body;
-		try {
-			const createReader = await Reader.createOne(data);
-			if (createReader)
+		let checkKey = false;
+
+		Object.keys(data).forEach((key) => {
+			if (!keyOfReader.includes(key)) {
+				checkKey = true;
+			}
+		});
+
+		if (!checkKey) {
+			//check age
+			const conditionMaxAge = await Regulation.findWithCondition('name', 'max_age');
+			const conditionMinAge = await Regulation.findWithCondition('name', 'min_age');
+
+			const checkMaxBirthday = ReaderController.checkAge(
+				data.birthday,
+				conditionMaxAge[0].current_value,
+			);
+			const checkMinBirthday = !ReaderController.checkAge(
+				data.birthday,
+				conditionMinAge[0].current_value,
+			);
+			if (checkMaxBirthday && checkMinBirthday) {
+				try {
+					const createReader = await Reader.createOne(data);
+					if (createReader)
+						return res.json({
+							msg: 'Lập thẻ độc giả thành công!',
+							status: 201,
+							result: true,
+						});
+					else
+						return res.json({
+							msg: 'Lập thẻ độc giả thất bại! Vui lòng thử lại.',
+							status: 201,
+							result: false,
+						});
+				} catch (er) {
+					return res.json({
+						msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+						status: 500,
+						result: false,
+					});
+				}
+			} else
 				return res.json({
-					msg: 'Lập thẻ độc giả thành công!',
-					status: 201,
-					result: true,
-				});
-			else
-				return res.json({
-					msg: 'Lập thẻ độc giả thất bại! Vui lòng thử lại.',
-					status: 201,
+					msg: `Vui lòng kiểm tra tuổi trong khoảng [${conditionMinAge[0].current_value},${conditionMaxAge[0].current_value}]`,
+					status: 200,
 					result: false,
 				});
-		} catch (er) {
+		} else {
 			return res.json({
-				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
-				status: 500,
+				msg: 'Có trường không hợp lệ!',
+				status: 200,
 				result: false,
 			});
 		}
@@ -29,30 +105,73 @@ class ReaderController {
 
 	// [PATCH] /api/reader/:id
 	async updateReader(req, res) {
+		const keyOfReader = [
+			'fullName',
+			'address',
+			'birthday',
+			'email',
+			'typeOfReader',
+			'dateCreatedCard',
+		];
+
 		const id = req.params.id;
 		const newData = req.body;
+		let checkKey = false;
 
-		try {
-			const updateReader = await Reader.updateOne(id, newData);
-			if (updateReader)
+		Object.keys(newData).forEach((key) => {
+			if (!keyOfReader.includes(key)) {
+				checkKey = true;
+			}
+		});
+
+		if (!checkKey) {
+			if (newData.birthday !== undefined) {
+				//check age
+				const conditionMaxAge = await Regulation.findWithCondition('name', 'max_age');
+				const conditionMinAge = await Regulation.findWithCondition('name', 'min_age');
+
+				const checkMaxBirthday = ReaderController.checkAge(
+					newData.birthday,
+					conditionMaxAge[0].current_value,
+				);
+				const checkMinBirthday = !ReaderController.checkAge(
+					newData.birthday,
+					conditionMinAge[0].current_value,
+				);
+				if (!(checkMinBirthday && checkMaxBirthday))
+					return res.json({
+						msg: `Vui lòng kiểm tra tuổi trong khoảng [${conditionMinAge[0].current_value},${conditionMaxAge[0].current_value}]`,
+						status: 200,
+						result: false,
+					});
+			}
+			try {
+				const updateReader = await Reader.updateOne(id, newData);
+				if (updateReader)
+					return res.json({
+						msg: 'Cập nhật thẻ độc giả thành công!',
+						status: 201,
+						result: true,
+					});
+				else
+					return res.json({
+						msg: 'Cập nhật thẻ độc giả thất bại! Vui lòng thử lại.',
+						status: 201,
+						result: false,
+					});
+			} catch (er) {
 				return res.json({
-					msg: 'Cập nhật thẻ độc giả thành công!',
-					status: 201,
-					result: true,
-				});
-			else
-				return res.json({
-					msg: 'Cập nhật thẻ độc giả thất bại! Vui lòng thử lại.',
-					status: 201,
+					msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+					status: 500,
 					result: false,
 				});
-		} catch (er) {
+			}
+		} else
 			return res.json({
-				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
-				status: 500,
+				msg: 'Có trường không hợp lệ!',
+				status: 200,
 				result: false,
 			});
-		}
 	}
 
 	// [DELETE] /api/reader/:id
@@ -83,14 +202,14 @@ class ReaderController {
 
 	// [GET] api/reader/:id
 	async findOneReader(req, res) {
-		const id = req.params.id;
+		const filter = req.params.id;
 
 		try {
-			const reader = await Reader.findOne(id);
+			const reader = await Reader.findOne(filter);
 
 			if (reader !== undefined)
 				return res.json({
-					reader,
+					reader: reader,
 					status: 200,
 					result: true,
 				});
@@ -139,16 +258,17 @@ class ReaderController {
 		const filter = req.query;
 
 		try {
-			const result = await Reader.findOne(filter);
-			if (result !== null) {
+			const reader = await Reader.findSome(filter);
+
+			if (reader !== null) {
 				return res.json({
-					readers: result,
+					readers: reader,
 					status: 200,
 					result: true,
 				});
 			} else
 				return res.json({
-					msg: 'Có lỗi xảy ra, vui lòng thử lại!',
+					msg: 'Không tìm thấy độc giả nào!',
 					status: 200,
 					result: false,
 				});

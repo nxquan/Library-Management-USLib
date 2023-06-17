@@ -26,7 +26,6 @@ class AuthenController {
 
 		if (!!inforOfUserFromUS) {
 			const isExisting = await User.findOne('id', id);
-
 			if (!isExisting) {
 				const password = AuthenController.generatePassword();
 				try {
@@ -59,6 +58,7 @@ class AuthenController {
 								: currentDate.getMonth() + 1
 						}/${currentDate.getFullYear()}`,
 					};
+					console.log(data);
 
 					await User.createOne(data);
 
@@ -96,6 +96,7 @@ class AuthenController {
 				msgEnglish: 'The code number is not registered!',
 				result: false,
 			});
+
 		let result = await bcrypt.compareSync(req.body.password, existingUser.password);
 
 		if (result) {

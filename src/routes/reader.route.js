@@ -9,4 +9,6 @@ Router.delete('/:id', readerController.deleteReader);
 Router.get('/:id', readerController.findOneReader);
 Router.get('/', readerController.getAllReader);
 
+Router.get('/search', readerController.search);
+
 module.exports = Router;

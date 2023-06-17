@@ -7,7 +7,7 @@ class InteractionController {
 		try {
 			let book = await Book.findOne(data.book_id);
 			if (book != null) {
-				if (book.satus == 'Con hang') {
+				if (book.status == 'Con Hang') {
 					let result = await Interaction.createReserve(data);
 
 					if (result) {
@@ -40,9 +40,33 @@ class InteractionController {
 		}
 	}
 
-	// [GET] api/interaction/:id
+	// [GET] api/interaction/:student_id
+	async viewReserveBook(req, res) {
+		let student_id = req.params.student_id;
+		try {
+			const result = await Interaction.findReserveBook(student_id);
+			// Xử lý dữ liệu nhận được
+			if (result.length > 0) {
+				res.json({
+					reserveBook: result,
+					result: true,
+					status: 200,
+				});
+			} else
+				res.json({
+					reserveBook: null,
+					result: false,
+					status: 200,
+				});
+		} catch (er) {
+			// Xử lý lỗi nếu có
+			console.error(error);
+		}
+	}
+
+	// [GET] api/interaction/book/:student_id
 	async viewHistory(req, res) {
-		let student_id = req.params.id;
+		let student_id = req.params.student_id;
 		try {
 			const History = await Interaction.getHistory(student_id);
 

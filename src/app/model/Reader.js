@@ -90,7 +90,8 @@ class Reader {
 				}
 			});
 
-			return readers;
+			if (readers.length > 0) return readers;
+			return null;
 		} catch (er) {
 			return null;
 		}
@@ -103,17 +104,8 @@ class Reader {
 
 			snapDocs.forEach((doc) => {
 				let data = doc.data();
-				let idReader = data.id;
-				let reader = new Reader(
-					idReader,
-					data.fullName,
-					data.typeOfReader,
-					data.birthday,
-					data.address,
-					data.email,
-					data.dateCreatedCard,
-				);
-				readers.push(reader);
+				data.id = doc.id;
+				readers.push(data);
 			});
 
 			return readers;

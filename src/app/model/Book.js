@@ -3,7 +3,6 @@ const { firestore } = require('../../config/db');
 
 const {
 	collection,
-	addDoc,
 	doc,
 	getDoc,
 	updateDoc,
@@ -44,8 +43,8 @@ class Book {
 		delete data.id;
 		const document = {
 			...data,
-			createdAt: serverTimestamp(),
-			updatedAt: serverTimestamp(),
+			created_at: serverTimestamp(),
+			updated_at: serverTimestamp(),
 		};
 
 		try {

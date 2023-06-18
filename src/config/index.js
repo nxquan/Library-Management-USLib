@@ -6,6 +6,8 @@ const firebaseConfig = {
 	messagingSenderId: '979153991477',
 	appId: '1:979153991477:web:7ea655dfac2332ae18be7c',
 	measurementId: 'G-XKHYGQCDZ1',
+	databaseURL:
+		'https://librarymanagement-2acb2-default-rtdb.asia-southeast1.firebasedatabase.app/',
 };
 
 module.exports = { firebaseConfig };

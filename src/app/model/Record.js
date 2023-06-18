@@ -8,7 +8,7 @@ const {
 	updateDoc,
 } = require('firebase/firestore/lite');
 const { firestore } = require('../../config/db');
-const Book = require('../model/Book');
+const { Book } = require('../model');
 
 class Record {
 	static recordRef = collection(firestore, 'records');

@@ -1,4 +1,4 @@
-const { Record, User, Book, Regulation } = require('../model');
+const { Record, Book, Regulation, Reader } = require('../model');
 
 class RecordController {
 	static isValidDate(createdDate, borrowedDate, expire) {
@@ -28,25 +28,26 @@ class RecordController {
 		}
 		return false;
 	}
+
 	// [POST] /api/record
 	async createRecord(req, res) {
 		const data = req.body;
 		const id = data.student_id;
 
 		// Checking studentId và name
-		const user = await User.findOne('id', id);
+		const readerCard = await Reader.findOne(id);
 
-		if (user) {
+		if (readerCard) {
 			// Check if student id is suitable for name
-			if (user.name.toLowerCase() == data.name.toLowerCase()) {
+			if (readerCard.name.toLowerCase() == data.name.toLowerCase()) {
 				// Check if the expiration of account
-				if (RecordController.isValidDate(user.createdAt, data.date, 6)) {
+				if (RecordController.isValidDate(readerCard.dateCreatedCard, data.date, 6)) {
 					const numberOfBook = await Record.getNumberOfBook(id, data.date);
 					const maxNumberOfBook = await Regulation.findWithCondition(
 						'name',
 						'max_amount_of_borrowed_book',
 					);
-					
+
 					if (numberOfBook + data.book_ids.length <= maxNumberOfBook[0].current_value) {
 						const bookIds = data.book_ids;
 
@@ -169,32 +170,31 @@ class RecordController {
 
 	// [GET] /api/record/:student_id
 	async getSome(req, res) {
-		const studentId = req.params.student_id
-		
+		const studentId = req.params.student_id;
+
 		try {
 			const records = await Record.findOne(['student_id'], [studentId]);
-			if(records) {
+			if (records) {
 				return res.json({
 					data: {
-						records
+						records,
 					},
 					status: 200,
-					result: true
-				})
-			}else{
+					result: true,
+				});
+			} else {
 				return res.json({
-					msg: "Không tìm thấy phiếu mượn nào",
+					msg: 'Không tìm thấy phiếu mượn nào',
 					status: 200,
-					result: false
-				})
+					result: false,
+				});
 			}
-			
-		}catch(er) {
+		} catch (er) {
 			return res.json({
-				msg: "Xảy ra lỗi hệ thống. Vui lòng thử lại sau",
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau',
 				status: 500,
-				result: false
-			})
+				result: false,
+			});
 		}
 	}
 }

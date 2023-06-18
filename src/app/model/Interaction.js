@@ -1,4 +1,5 @@
-const { firestore } = require('../../config/db');
+const { firestore, realTimeDatabase } = require('../../config/db');
+
 const {
 	collection,
 	addDoc,
@@ -17,12 +18,59 @@ class Interaction {
 
 	static async createReserve(data) {
 		try {
-			await addDoc(this.reserveRef, data);
-			await Book.updateOne(data.book_id, { status: 'Đã được đặt trước' });
+			// realtime database
+			const db = realTimeDatabase.getDatabase();
+
+			const ref = realTimeDatabase.ref(db, 'reserveBook');
+			const newRecordRef = realTimeDatabase.push(ref);
+
+			// Ghi dữ liệu vào key mới
+			realTimeDatabase.set(newRecordRef, {
+				student_id: data.student_id,
+				name: data.name,
+				book_id: data.book_id,
+				receive_date: data.receive_date,
+			});
+
+			// firestore
+			// await addDoc(this.reserveRef, data);
+			// await Book.updateOne(data.book_id, { status: 'Đã được đặt trước' });
 			return true;
 		} catch (er) {
 			return false;
 		}
+	}
+
+	static async findReserveBook(student_id) {
+		return new Promise((resolve, reject) => {
+			const db = realTimeDatabase.getDatabase();
+			const reserveBookRef = realTimeDatabase.ref(db, 'reserveBook');
+
+			realTimeDatabase.onValue(
+				reserveBookRef,
+				(snapshot) => {
+					const data = snapshot.val();
+					const reserveBook = [];
+
+					if (data) {
+						// Lặp qua từng key trong dữ liệu
+						Object.keys(data).forEach((key) => {
+							const item = data[key];
+							if (item.student_id === student_id) {
+								reserveBook.push(item);
+							}
+						});
+					}
+
+					// Resolve với kết quả dữ liệu
+					resolve(reserveBook);
+				},
+				(error) => {
+					// Reject nếu có lỗi xảy ra
+					reject(error);
+				},
+			);
+		});
 	}
 
 	static async getHistory(student_id) {
@@ -31,13 +79,15 @@ class Interaction {
 			const History = [];
 
 			for (const record of Records) {
-				for (const book_id of record.book_ids) {
-					let data = {};
-					data.borrow_date = record.date;
-					data.book_id = book_id.id;
-					data.return_date = book_id.return_date;
-					data.is_return = book_id.is_return;
-					History.push(data);
+				if (record.student_id === student_id) {
+					for (const book_id of record.book_ids) {
+						let data = {};
+						data.borrow_date = record.date;
+						data.book_id = book_id.id;
+						data.return_date = book_id.return_date;
+						data.is_return = book_id.is_return;
+						History.push(data);
+					}
 				}
 			}
 			await Promise.all(
@@ -67,24 +117,32 @@ class Interaction {
 			let book_ids = borrowed.book_ids;
 			book_ids.forEach((book) => {
 				if (book.id === book_id) {
-					const existingDate = new Date(book.return_date);
+					const partsReturn = book.return_date.split('/');
+					const existingDate = new Date(
+						`${partsReturn[2]}-${partsReturn[1]}-${partsReturn[0]}`,
+					);
 
 					const newDate = new Date(existingDate.getTime() + day * 24 * 60 * 60 * 1000);
 					const formattedDate = newDate.toLocaleDateString('en-GB', options);
 
 					//kiểm tra quy định
-					const timediff = Math.abs(newDate.getTime() - existingDate.getTime());
+					const partsBorrowed = date.split('/');
+					const borrowedDate = new Date(
+						`${partsBorrowed[2]}-${partsBorrowed[1]}-${partsBorrowed[0]}`,
+					);
+					const timediff = Math.abs(newDate.getTime() - borrowedDate.getTime());
 					const diffDays = Math.ceil(timediff / (1000 * 60 * 60 * 24));
 					if (regulationBorrow[0].current_value < diffDays) {
-						result = `Số ngày mượn tối đa không được quá + ${regulationBorrow[0].current_value}`;
+						result = `Số ngày mượn tối đa không được quá  ${regulationBorrow[0].current_value} ngày`;
 					}
 					book.return_date = formattedDate;
+					book.is_return = false;
 				}
 			});
 			if (result != null) {
 				return result;
 			}
-			await Record.updateOne(result.id, { book_ids: book_ids });
+			await Record.updateOne(borrowed.id, { book_ids: book_ids });
 			return true;
 		} catch (er) {
 			return false;

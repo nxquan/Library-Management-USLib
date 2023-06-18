@@ -1,7 +1,6 @@
-const Genre = require('../model/Genre');
+const { Genre } = require('../model');
 
 class GenreController {
-
 	// [POST] /api/genre
 	async createGenre(req, res) {
 		const data = req.body;
@@ -35,7 +34,6 @@ class GenreController {
 		}
 	}
 
-	
 	// [DELETE] /api/genre/:id
 	async deleteGenre(req, res) {
 		const id = req.params.id;

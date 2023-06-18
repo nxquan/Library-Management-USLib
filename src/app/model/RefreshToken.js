@@ -37,7 +37,6 @@ class RefreshToken {
 
 			return true;
 		} catch (er) {
-			console.log(er);
 			return false;
 		}
 	}

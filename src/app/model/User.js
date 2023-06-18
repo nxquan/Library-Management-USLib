@@ -73,7 +73,7 @@ class User {
 			const newDocRef = doc(this.userRef, id);
 
 			const result = await setDoc(newDocRef, newDocument);
-			console.log(result);
+			
 			return true;
 		} catch (er) {
 			return false;

@@ -106,7 +106,6 @@ class InteractionController {
 
 		try {
 			const result = await Interaction.renewalBorrowBook(student_id, data);
-			console.log(result);
 			if (result == true) {
 				return res.json({
 					msg: 'Xin gia hạn sách thành công!',

@@ -53,8 +53,13 @@ class AuthenController {
 						status: 201,
 						result: true,
 					});
+				} 
 				} catch (er) {
-					console.log(er);
+					return res.json({
+						msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+						status: 500,
+						result: false,
+					});
 				}
 			} else {
 				return res.json({
@@ -143,7 +148,6 @@ class AuthenController {
 				await RefreshToken.deleteOne('token', refreshToken);
 				return res.json({ status: 200, result: true });
 			} catch (er) {
-				console.log(er);
 				return res.json({ status: 200, result: false });
 			}
 		})

@@ -7,7 +7,7 @@ const {
 	updateDoc,
 	deleteDoc,
 	doc,
-	set,
+	
 } = require('firebase/firestore/lite');
 
 class Reader {

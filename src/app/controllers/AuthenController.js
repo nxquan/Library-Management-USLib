@@ -1,9 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-const User = require('../model/User');
-const RefreshToken = require('../model/RefreshToken');
-
+const { User, RefreshToken, Reader } = require('../model');
 const { createTransporter } = require('../../config/mail');
 
 class AuthenController {
@@ -19,56 +17,50 @@ class AuthenController {
 	}
 
 	// [POST] /api/auth/register [id, type]
-	async register(req, res, next) {
-		const { id, type } = req.body;
+	async register(req, res) {
+		const { id } = req.body;
 		// Check if id exists in University of Science
 		const inforOfUserFromUS = await User.findUSOne('id', id);
 
 		if (!!inforOfUserFromUS) {
-			const isExisting = await User.findOne('id', id);
+			const isExisting = await User.findById(id);
+
 			if (!isExisting) {
 				const password = AuthenController.generatePassword();
-				try {
-					const transporter = await createTransporter();
-					await transporter.sendMail({
-						to: `${id}@student.hcmus.edu.vn`,
-						subject: 'Kích hoạt tài khoản',
-						html: `<h2>Chúc mừng, bạn đã kích hoạt hành công</h2>\n<h3>Mật khẩu là: </h3> ${password} \n<p>Hãy dùng nó để đăng nhập!</p>`,
-					});
+				const transporter = await createTransporter();
+				await transporter.sendMail({
+					to: `${id}@student.hcmus.edu.vn`,
+					subject: 'Kích hoạt tài khoản',
+					html: `<h2>Chúc mừng, bạn đã kích hoạt tài khoản thư viện thành công</h2>\n<h3>Mật khẩu là: ${password}</h3>\n<p>Hãy dùng nó để đăng nhập!</p>`,
+				});
 
-					const salt = await bcrypt.genSaltSync(10);
-					const hash = await bcrypt.hashSync(password, salt);
-					const currentDate = new Date();
-					const data = {
-						id: id,
-						name: inforOfUserFromUS.name,
-						password: hash,
-						type: type,
-						typeOfReader: 'DocGiaA',
-						birthday: inforOfUserFromUS.birthday,
-						address: inforOfUserFromUS.address,
-						email: inforOfUserFromUS.email,
-						createAt: `${
-							currentDate.getDate() < 10
-								? '0' + currentDate.getDate()
-								: currentDate.getDate()
-						}/${
-							currentDate.getMonth() + 1 < 10
-								? '0' + (currentDate.getMonth() + 1)
-								: currentDate.getMonth() + 1
-						}/${currentDate.getFullYear()}`,
-					};
-					console.log(data);
+				const salt = bcrypt.genSaltSync(10);
+				const hashPassword = bcrypt.hashSync(password, salt);
+				const data = {
+					id,
+					password: hashPassword,
+					has_card: false,
+				};
 
-					await User.createOne(data);
+				const readerCard = await Reader.findOne(id);
 
+				if (readerCard) {
+					data.has_card = true;
+				}
+				const result = await User.createOne(data);
+
+				if (result) {
 					return res.json({
 						msg: 'Đăng ký thành công',
 						status: 201,
 						result: true,
 					});
-				} catch (er) {
-					console.log(er);
+				} else {
+					return res.json({
+						msg: 'Xảy ra lỗi hệ thống',
+						status: 500,
+						result: false,
+					});
 				}
 			} else {
 				return res.json({
@@ -87,7 +79,7 @@ class AuthenController {
 	}
 
 	// [POST] /api/auth/login [id, password]
-	async login(req, res, next) {
+	async login(req, res) {
 		let existingUser = await User.findOne('id', req.body.id);
 
 		if (!existingUser)
@@ -97,7 +89,7 @@ class AuthenController {
 				result: false,
 			});
 
-		let result = await bcrypt.compareSync(req.body.password, existingUser.password);
+		let result = bcrypt.compareSync(req.body.password, existingUser.password);
 
 		if (result) {
 			const accessToken = jwt.sign({ id: req.body.id }, process.env.ACCESS_TOKEN_SECRET, {
@@ -170,7 +162,7 @@ class AuthenController {
 		if (!inforOfUser) {
 			return res.json({ msg: 'ID không chính xác', status: 200 });
 		}
-		let result = await bcrypt.compareSync(req.body.current_password, inforOfUser.password);
+		let result = bcrypt.compareSync(req.body.current_password, inforOfUser.password);
 
 		if (result) {
 			const salt = bcrypt.genSaltSync(10);

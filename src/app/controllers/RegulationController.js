@@ -1,7 +1,6 @@
-const Regulation = require('../model/Regulation');
+const { Regulation } = require('../model');
 
 class RegulationController {
-
 	// [POST] api/regulation
 	async createRegulation(req, res) {
 		const data = req.body;

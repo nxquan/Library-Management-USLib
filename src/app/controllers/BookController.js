@@ -1,7 +1,7 @@
-const Book = require('../model/Book');
-
 const { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } = require('firebase/storage');
 const storage = getStorage();
+
+const { Book } = require('../model');
 const { bookSchema } = require('../../config/validate');
 
 class BookController {

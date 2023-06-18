@@ -1,19 +1,23 @@
 const { firestore } = require('../../config/db');
-const { collection, getDocs, addDoc, query, where, updateDoc } = require('firebase/firestore/lite');
+const {
+	collection,
+	getDocs,
+	query,
+	where,
+	updateDoc,
+	setDoc,
+	getDoc,
+	doc,
+} = require('firebase/firestore/lite');
 
 class User {
 	static userRef = collection(firestore, `users`);
 	static userUSRef = collection(firestore, 'us_students');
 
-	constructor(id, name, password, type, typeOfReader, birthday, address, email, createdAt) {
+	constructor(id, password, ref, createdAt) {
 		this.id = id;
-		this.name = name;
 		this.password = password;
-		this.type = type;
-		this.typeOfReader = typeOfReader;
-		this.birthday = birthday;
-		this.address = address;
-		this.email = email;
+		this.ref = ref;
 		this.createdAt = createdAt;
 	}
 
@@ -40,10 +44,36 @@ class User {
 		}
 	}
 
-	static async createOne(data) {
+	static async findById(value) {
 		try {
-			await addDoc(this.userRef, data);
+			const docRef = doc(this.userRef, value);
+			const docSnap = await getDoc(docRef);
+			return docSnap.data();
+		} catch (err) {
+			return null;
+		}
+	}
 
+	static async createOne(data) {
+		const id = data.id;
+		const currentDate = new Date();
+
+		const newDocument = {
+			...data,
+			create_at: `${
+				currentDate.getDate() < 10 ? '0' + currentDate.getDate() : currentDate.getDate()
+			}/${
+				currentDate.getMonth() + 1 < 10
+					? '0' + (currentDate.getMonth() + 1)
+					: currentDate.getMonth() + 1
+			}/${currentDate.getFullYear()}`,
+		};
+
+		try {
+			const newDocRef = doc(this.userRef, id);
+
+			const result = await setDoc(newDocRef, newDocument);
+			console.log(result);
 			return true;
 		} catch (er) {
 			return false;

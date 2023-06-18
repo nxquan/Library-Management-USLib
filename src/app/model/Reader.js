@@ -3,28 +3,43 @@ const {
 	collection,
 	getDoc,
 	getDocs,
-	addDoc,
+	setDoc,
 	updateDoc,
 	deleteDoc,
 	doc,
+	set,
 } = require('firebase/firestore/lite');
 
 class Reader {
 	static readerRef = collection(firestore, 'readers');
 
-	constructor(id = '', fullName, typeOfReader, birthday, address, email, dateCreatedCard) {
-		this.id = id;
+	constructor(fullName, typeOfReader, birthday, address, email, dateCreated) {
 		this.fullName = fullName;
 		this.typeOfReader = typeOfReader;
 		this.birthday = birthday;
 		this.address = address;
 		this.email = email;
-		this.dateCreatedCard = dateCreatedCard;
+		this.dateCreated = dateCreated;
 	}
 
 	static async createOne(data) {
+		const id = data.student_id;
+		delete data.student_id;
+		const currentDate = new Date();
+
+		const newDocument = {
+			...data,
+			createAt: `${
+				currentDate.getDate() < 10 ? '0' + currentDate.getDate() : currentDate.getDate()
+			}/${
+				currentDate.getMonth() + 1 < 10
+					? '0' + (currentDate.getMonth() + 1)
+					: currentDate.getMonth() + 1
+			}/${currentDate.getFullYear()}`,
+		};
 		try {
-			await addDoc(this.readerRef, data);
+			const newDocRef = doc(this.readerRef, id);
+			await setDoc(newDocRef, newDocument);
 			return true;
 		} catch (er) {
 			return false;
@@ -32,9 +47,21 @@ class Reader {
 	}
 
 	static async updateOne(id, newData) {
+		const currentDate = new Date();
+
+		const newDocument = {
+			...newData,
+			updateAt: `${
+				currentDate.getDate() < 10 ? '0' + currentDate.getDate() : currentDate.getDate()
+			}/${
+				currentDate.getMonth() + 1 < 10
+					? '0' + (currentDate.getMonth() + 1)
+					: currentDate.getMonth() + 1
+			}/${currentDate.getFullYear()}`,
+		};
 		try {
 			const docRef = doc(this.readerRef, id);
-			await updateDoc(docRef, newData);
+			await updateDoc(docRef, newDocument);
 
 			return true;
 		} catch (er) {
@@ -46,7 +73,6 @@ class Reader {
 		try {
 			const docRef = doc(this.readerRef, id);
 			await deleteDoc(docRef);
-
 			return true;
 		} catch (er) {
 			return false;

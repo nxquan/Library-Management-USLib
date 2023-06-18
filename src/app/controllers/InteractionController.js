@@ -11,32 +11,36 @@ class InteractionController {
 					let result = await Interaction.createReserve(data);
 
 					if (result) {
-						res.json({
+						return res.json({
 							msg: 'Đặt chỗ sách thành công',
 							status: 201,
 							result: true,
 						});
 					} else {
-						res.json({
+						return res.json({
 							msg: 'Đặt chỗ sách thất bại',
 							status: 201,
 							result: false,
 						});
 					}
 				} else
-					res.json({
+					return res.json({
 						msg: 'Sách đã hết hàng',
 						status: 201,
 						result: false,
 					});
 			} else
-				res.json({
+				return res.json({
 					msg: 'Mã sách không đúng',
 					status: 201,
 					result: false,
 				});
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -47,20 +51,23 @@ class InteractionController {
 			const result = await Interaction.findReserveBook(student_id);
 			// Xử lý dữ liệu nhận được
 			if (result.length > 0) {
-				res.json({
+				return res.json({
 					reserveBook: result,
 					result: true,
 					status: 200,
 				});
 			} else
-				res.json({
+				return res.json({
 					reserveBook: null,
 					result: false,
 					status: 200,
 				});
 		} catch (er) {
-			// Xử lý lỗi nếu có
-			console.error(error);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -71,20 +78,24 @@ class InteractionController {
 			const History = await Interaction.getHistory(student_id);
 
 			if (History !== null) {
-				res.json({
+				return res.json({
 					History: History,
 					result: true,
 					status: 200,
 				});
 			} else {
-				res.json({
+				return res.json({
 					History: null,
 					result: false,
 					status: 200,
 				});
 			}
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 
@@ -97,26 +108,30 @@ class InteractionController {
 			const result = await Interaction.renewalBorrowBook(student_id, data);
 			console.log(result);
 			if (result == true) {
-				res.json({
+				return res.json({
 					msg: 'Xin gia hạn sách thành công!',
 					status: 200,
 					result: true,
 				});
 			} else if (!result) {
-				res.json({
+				return res.json({
 					msg: 'Xin gia hạn sách thất bại!',
 					status: 200,
 					result: false,
 				});
 			} else {
-				res.json({
+				return res.json({
 					msg: result,
 					status: 200,
 					result: false,
 				});
 			}
 		} catch (er) {
-			console.log(er);
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
 		}
 	}
 }

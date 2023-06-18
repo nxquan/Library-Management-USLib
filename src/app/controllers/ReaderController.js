@@ -35,127 +35,41 @@ class ReaderController {
 
 	// [POST] /api/reader
 	async createReader(req, res) {
-		const keyOfReader = [
-			'fullName',
-			'address',
-			'birthday',
-			'email',
-			'typeOfReader',
-			'dateCreatedCard',
-		];
-
 		const data = req.body;
-		let checkKey = false;
+		//check exsist reader
 
-		Object.keys(data).forEach((key) => {
-			if (!keyOfReader.includes(key)) {
-				checkKey = true;
-			}
-		});
-
-		if (!checkKey) {
-			//check age
-			const conditionMaxAge = await Regulation.findWithCondition('name', 'max_age');
-			const conditionMinAge = await Regulation.findWithCondition('name', 'min_age');
-
-			const checkMaxBirthday = ReaderController.checkAge(
-				data.birthday,
-				conditionMaxAge[0].current_value,
-			);
-			const checkMinBirthday = !ReaderController.checkAge(
-				data.birthday,
-				conditionMinAge[0].current_value,
-			);
-			if (checkMaxBirthday && checkMinBirthday) {
-				try {
-					const createReader = await Reader.createOne(data);
-					if (createReader)
-						return res.json({
-							msg: 'Lập thẻ độc giả thành công!',
-							status: 201,
-							result: true,
-						});
-					else
-						return res.json({
-							msg: 'Lập thẻ độc giả thất bại! Vui lòng thử lại.',
-							status: 201,
-							result: false,
-						});
-				} catch (er) {
-					return res.json({
-						msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
-						status: 500,
-						result: false,
-					});
-				}
-			} else
-				return res.json({
-					msg: `Vui lòng kiểm tra tuổi trong khoảng [${conditionMinAge[0].current_value},${conditionMaxAge[0].current_value}]`,
-					status: 200,
-					result: false,
-				});
-		} else {
+		const reader = await Reader.findOne(data.student_id);
+		if (reader !== false && reader !== undefined) {
 			return res.json({
-				msg: 'Có trường không hợp lệ!',
-				status: 200,
+				msg: 'Mã số này đã được tạo thẻ độc giả trước đó!',
+				status: 201,
 				result: false,
 			});
 		}
-	}
+		//check age
+		const conditionMaxAge = await Regulation.findWithCondition('name', 'max_age');
+		const conditionMinAge = await Regulation.findWithCondition('name', 'min_age');
 
-	// [PATCH] /api/reader/:id
-	async updateReader(req, res) {
-		const keyOfReader = [
-			'fullName',
-			'address',
-			'birthday',
-			'email',
-			'typeOfReader',
-			'dateCreatedCard',
-		];
-
-		const id = req.params.id;
-		const newData = req.body;
-		let checkKey = false;
-
-		Object.keys(newData).forEach((key) => {
-			if (!keyOfReader.includes(key)) {
-				checkKey = true;
-			}
-		});
-
-		if (!checkKey) {
-			if (newData.birthday !== undefined) {
-				//check age
-				const conditionMaxAge = await Regulation.findWithCondition('name', 'max_age');
-				const conditionMinAge = await Regulation.findWithCondition('name', 'min_age');
-
-				const checkMaxBirthday = ReaderController.checkAge(
-					newData.birthday,
-					conditionMaxAge[0].current_value,
-				);
-				const checkMinBirthday = !ReaderController.checkAge(
-					newData.birthday,
-					conditionMinAge[0].current_value,
-				);
-				if (!(checkMinBirthday && checkMaxBirthday))
-					return res.json({
-						msg: `Vui lòng kiểm tra tuổi trong khoảng [${conditionMinAge[0].current_value},${conditionMaxAge[0].current_value}]`,
-						status: 200,
-						result: false,
-					});
-			}
+		const checkMaxBirthday = ReaderController.checkAge(
+			data.birthday,
+			conditionMaxAge[0].current_value,
+		);
+		const checkMinBirthday = !ReaderController.checkAge(
+			data.birthday,
+			conditionMinAge[0].current_value,
+		);
+		if (checkMaxBirthday && checkMinBirthday) {
 			try {
-				const updateReader = await Reader.updateOne(id, newData);
-				if (updateReader)
+				const createReader = await Reader.createOne(data);
+				if (createReader)
 					return res.json({
-						msg: 'Cập nhật thẻ độc giả thành công!',
+						msg: 'Lập thẻ độc giả thành công!',
 						status: 201,
 						result: true,
 					});
 				else
 					return res.json({
-						msg: 'Cập nhật thẻ độc giả thất bại! Vui lòng thử lại.',
+						msg: 'Lập thẻ độc giả thất bại! Vui lòng thử lại.',
 						status: 201,
 						result: false,
 					});
@@ -168,18 +82,66 @@ class ReaderController {
 			}
 		} else
 			return res.json({
-				msg: 'Có trường không hợp lệ!',
+				msg: `Vui lòng kiểm tra tuổi trong khoảng [${conditionMinAge[0].current_value},${conditionMaxAge[0].current_value}]`,
 				status: 200,
 				result: false,
 			});
+	}
+
+	// [PATCH] /api/reader/:id
+	async updateReader(req, res) {
+		const id = req.params.id;
+		const newData = req.body;
+
+		if (newData.birthday !== undefined) {
+			//check age
+			const conditionMaxAge = await Regulation.findWithCondition('name', 'max_age');
+			const conditionMinAge = await Regulation.findWithCondition('name', 'min_age');
+
+			const checkMaxBirthday = ReaderController.checkAge(
+				newData.birthday,
+				conditionMaxAge[0].current_value,
+			);
+			const checkMinBirthday = !ReaderController.checkAge(
+				newData.birthday,
+				conditionMinAge[0].current_value,
+			);
+			if (!(checkMinBirthday && checkMaxBirthday))
+				return res.json({
+					msg: `Vui lòng kiểm tra tuổi trong khoảng [${conditionMinAge[0].current_value},${conditionMaxAge[0].current_value}]`,
+					status: 200,
+					result: false,
+				});
+		}
+		try {
+			const updateReader = await Reader.updateOne(id, newData);
+			if (updateReader)
+				return res.json({
+					msg: 'Cập nhật thẻ độc giả thành công!',
+					status: 201,
+					result: true,
+				});
+			else
+				return res.json({
+					msg: 'Cập nhật thẻ độc giả thất bại! Vui lòng thử lại.',
+					status: 201,
+					result: false,
+				});
+		} catch (er) {
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
+		}
 	}
 
 	// [DELETE] /api/reader/:id
 	async deleteReader(req, res) {
 		const id = req.params.id;
 		try {
-			const deleteReader = await Reader.deleteOne(id);
-			if (deleteReader)
+			const result = await Reader.deleteOne(id);
+			if (result)
 				return res.json({
 					msg: 'Xoá thẻ độc giả thành công!',
 					status: 204,
@@ -202,10 +164,10 @@ class ReaderController {
 
 	// [GET] api/reader/:id
 	async findOneReader(req, res) {
-		const filter = req.params.id;
+		const id = req.body.id;
 
 		try {
-			const reader = await Reader.findOne(filter);
+			const reader = await Reader.findOne(id);
 
 			if (reader !== undefined)
 				return res.json({

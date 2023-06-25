@@ -32,7 +32,7 @@ class User {
 			} else {
 				return null;
 			}
-		catch(){
+		catch(er){
 			return null;
 		}
 	}

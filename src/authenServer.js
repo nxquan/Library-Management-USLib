@@ -8,7 +8,7 @@ const port = process.env.AUTHEN_PORT || 5500
 // Server will config for CORS policy so that client can call API to server!
 app.use(
 	cors({
-		origin: process.env.URL_CLIENT,
+		origin: 'http://localhost:3000',
 		credentials: false,
 	}),
 );

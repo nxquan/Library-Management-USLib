@@ -9,7 +9,7 @@ const port = process.env.AUTHEN_PORT || 5500
 app.use(
 	cors({
 		origin: process.env.URL_CLIENT,
-		credentials: true,
+		credentials: false,
 	}),
 );
 

@@ -23,16 +23,12 @@ class User {
 
 	//CRUD
 	static async findUSOne(field, value) {
-		try{
-			const queryResultUS = query(this.userUSRef, where(field, '==', value));
-			const querySnapshotUS = await getDocs(queryResultUS);
+		const queryResultUS = query(this.userUSRef, where(field, '==', value));
+		const querySnapshotUS = await getDocs(queryResultUS);
 
-			if (!querySnapshotUS.empty) {
-				return querySnapshotUS.docs.at(0).data();
-			} else {
-				return null;
-			}
-		catch(er){
+		if (!querySnapshotUS.empty) {
+			return querySnapshotUS.docs.at(0).data();
+		} else {
 			return null;
 		}
 	}

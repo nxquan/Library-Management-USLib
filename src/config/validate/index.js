@@ -1,4 +1,4 @@
-const Joi = require('joi');
+const Joi = require('joi')
 
 const bookSchema = Joi.object({
 	id: Joi.string().default(''),
@@ -10,7 +10,8 @@ const bookSchema = Joi.object({
 	publisher: Joi.string().required(),
 	imported_date: Joi.string().required(),
 	status: Joi.string().required(),
-});
+	number: Joi.number(),
+})
 
 const readerSchema = Joi.object({
 	student_id: Joi.string().required(),
@@ -20,7 +21,7 @@ const readerSchema = Joi.object({
 	email: Joi.string().min(3).required().email(),
 	dateCreated: Joi.string().required(),
 	typeOfReader: Joi.string().required(),
-});
+})
 
 const updateReaderSchema = Joi.object({
 	fullName: Joi.string().max(50),
@@ -29,6 +30,6 @@ const updateReaderSchema = Joi.object({
 	email: Joi.string().min(3).email(),
 	dateCreated: Joi.string(),
 	typeOfReader: Joi.string(),
-});
+})
 
-module.exports = { bookSchema, readerSchema, updateReaderSchema };
+module.exports = { bookSchema, readerSchema, updateReaderSchema }

@@ -89,6 +89,7 @@ class Book {
 			return null
 		}
 	}
+
 	static unicodeToASCII(str) {
 		// Chuyển hết sang chữ thường
 		str = str.toLowerCase()

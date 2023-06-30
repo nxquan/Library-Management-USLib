@@ -1,39 +1,49 @@
-const { Interaction, Book } = require('../model');
+const { Interaction } = require('../model');
 
 class InteractionController {
 	// [POST] api/interaction
-	async reserveBook(req, res) {
+	async requestReader(req, res) {
 		let data = req.body;
 		try {
-			let book = await Book.findOne(data.book_id);
-			if (book != null) {
-				if (book.status == 'Con Hang') {
-					let result = await Interaction.createReserve(data);
-
-					if (result) {
-						return res.json({
-							msg: 'Đặt chỗ sách thành công',
-							status: 201,
-							result: true,
-						});
-					} else {
-						return res.json({
-							msg: 'Đặt chỗ sách thất bại',
-							status: 201,
-							result: false,
-						});
-					}
-				} else
-					return res.json({
-						msg: 'Sách đã hết hàng',
-						status: 201,
-						result: false,
-					});
-			} else
+			let result = await Interaction.createRequest(data);
+			if (result) {
 				return res.json({
-					msg: 'Mã sách không đúng',
+					msg: 'Yêu cầu lập thẻ độc giả thành công.',
+					status: 201,
+					result: true,
+				});
+			} else {
+				return res.json({
+					msg: 'Yêu cầu lập thẻ độc giả thất bại, vui lòng thử lại',
 					status: 201,
 					result: false,
+				});
+			}
+		} catch (er) {
+			return res.json({
+				msg: 'Xảy ra lỗi hệ thống. Vui lòng thử lại sau.',
+				status: 500,
+				result: false,
+			});
+		}
+	}
+
+	// [GET] api/interaction/request
+	async viewRequestCreate(req, res) {
+		try {
+			const result = await Interaction.findRequest();
+			// Xử lý dữ liệu nhận được
+			if (result.length > 0) {
+				return res.json({
+					request: result,
+					result: true,
+					status: 200,
+				});
+			} else
+				return res.json({
+					msg: 'Không có yêu cầu lập thẻ độc giả nào',
+					result: false,
+					status: 200,
 				});
 		} catch (er) {
 			return res.json({
@@ -44,21 +54,20 @@ class InteractionController {
 		}
 	}
 
-	// [GET] api/interaction/:student_id
-	async viewReserveBook(req, res) {
-		let student_id = req.params.student_id;
+	async deleteRequest(req, res) {
+		let id = req.params.student_id;
 		try {
-			const result = await Interaction.findReserveBook(student_id);
+			const result = await Interaction.deleteRequest(id);
 			// Xử lý dữ liệu nhận được
-			if (result.length > 0) {
+			if (result === true) {
 				return res.json({
-					reserveBook: result,
+					msg: 'Xóa thành công',
 					result: true,
 					status: 200,
 				});
 			} else
 				return res.json({
-					reserveBook: null,
+					msg: 'Xóa thất bại',
 					result: false,
 					status: 200,
 				});
@@ -106,7 +115,6 @@ class InteractionController {
 
 		try {
 			const result = await Interaction.renewalBorrowBook(student_id, data);
-			console.log(result);
 			if (result == true) {
 				return res.json({
 					msg: 'Xin gia hạn sách thành công!',

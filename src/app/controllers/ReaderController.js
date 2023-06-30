@@ -164,7 +164,7 @@ class ReaderController {
 
 	// [GET] api/reader/:id
 	async findOneReader(req, res) {
-		const id = req.body.id;
+		const id = req.params.id;
 
 		try {
 			const reader = await Reader.findOne(id);

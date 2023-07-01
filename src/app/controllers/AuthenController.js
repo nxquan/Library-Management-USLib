@@ -18,63 +18,113 @@ class AuthenController {
 
 	// [POST] /api/auth/register [id, type]
 	async register(req, res) {
-		const { id } = req.body
-		// Check if id exists in University of Science
-		const inforOfUserFromUS = await User.findUSOne('id', id)
+		const { id, type } = req.body
+		if (type === 'student') {
+			// Check if id exists in University of Science
+			const inforOfUserFromUS = await User.findUSOne('id', id)
 
-		if (!!inforOfUserFromUS) {
-			const isExisting = await User.findById(id)
+			if (!!inforOfUserFromUS) {
+				const isExisting = await User.findById(id)
 
-			if (!isExisting) {
-				const password = AuthenController.generatePassword()
-				const transporter = await createTransporter()
-				await transporter.sendMail({
-					to: `${id}@student.hcmus.edu.vn`,
-					subject: 'Kích hoạt tài khoản',
-					html: `<h2>Chúc mừng, bạn đã kích hoạt tài khoản thư viện thành công</h2>\n<h3>Mật khẩu là: ${password}</h3>\n<p>Hãy dùng nó để đăng nhập!</p>`,
-				})
-
-				const salt = bcrypt.genSaltSync(10)
-				const hashPassword = bcrypt.hashSync(password, salt)
-				const data = {
-					id,
-					password: hashPassword,
-					has_card: false,
-				}
-
-				const readerCard = await Reader.findOne(id)
-
-				if (readerCard) {
-					data.has_card = true
-				}
-				const result = await User.createOne(data)
-
-				if (result) {
-					return res.json({
-						msg: 'Đăng ký thành công',
-						status: 201,
-						result: true,
+				if (!isExisting) {
+					const password = AuthenController.generatePassword()
+					const transporter = await createTransporter()
+					await transporter.sendMail({
+						to: `${id}@student.hcmus.edu.vn`,
+						subject: 'Kích hoạt tài khoản',
+						html: `<h2>Chúc mừng, bạn đã kích hoạt tài khoản thư viện thành công</h2>\n<h3>Mật khẩu là: ${password}</h3>\n<p>Hãy dùng nó để đăng nhập!</p>`,
 					})
+
+					const salt = bcrypt.genSaltSync(10)
+					const hashPassword = bcrypt.hashSync(password, salt)
+					const data = {
+						id,
+						password: hashPassword,
+						has_card: false,
+						type: 'student',
+					}
+
+					const readerCard = await Reader.findOne(id)
+
+					if (readerCard) {
+						data.has_card = true
+					}
+					const result = await User.createOne(data)
+
+					if (result) {
+						return res.json({
+							msg: 'Đăng ký thành công',
+							status: 201,
+							result: true,
+						})
+					} else {
+						return res.json({
+							msg: 'Xảy ra lỗi hệ thống',
+							status: 500,
+							result: false,
+						})
+					}
 				} else {
 					return res.json({
-						msg: 'Xảy ra lỗi hệ thống',
-						status: 500,
+						msg: 'Mã số đã được đăng ký. Hãy quên mật khẩu để lấy lại!',
+						status: 200,
 						result: false,
 					})
 				}
 			} else {
 				return res.json({
-					msg: 'Mã số đã được đăng ký. Hãy quên mật khẩu để lấy lại!',
+					msg: 'Mã số không tồn tại. Vui lòng nhập chính xác mã!',
 					status: 200,
 					result: false,
 				})
 			}
 		} else {
-			return res.json({
-				msg: 'Mã số không tồn tại. Vui lòng nhập chính xác mã!',
-				status: 200,
-				result: false,
-			})
+			// Check if id exists in University of Science
+			const inforOfUserFromUS = await User.findUSOneAdmin('id', id)
+
+			if (!!inforOfUserFromUS) {
+				const isExisting = await User.findById(id)
+
+				if (!isExisting) {
+					const password = '123456'
+
+					const salt = bcrypt.genSaltSync(10)
+					const hashPassword = bcrypt.hashSync(password, salt)
+					const data = {
+						id,
+						password: hashPassword,
+						type: 'admin',
+					}
+
+					const result = await User.createOne(data)
+
+					if (result) {
+						return res.json({
+							msg: 'Đăng ký thành công',
+							status: 201,
+							result: true,
+						})
+					} else {
+						return res.json({
+							msg: 'Xảy ra lỗi hệ thống',
+							status: 500,
+							result: false,
+						})
+					}
+				} else {
+					return res.json({
+						msg: 'Mã số đã được đăng ký. Hãy quên mật khẩu để lấy lại!',
+						status: 200,
+						result: false,
+					})
+				}
+			} else {
+				return res.json({
+					msg: 'Mã số không tồn tại. Vui lòng nhập chính xác mã!',
+					status: 200,
+					result: false,
+				})
+			}
 		}
 	}
 

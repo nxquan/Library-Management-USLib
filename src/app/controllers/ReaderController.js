@@ -1,7 +1,4 @@
-const { json } = require('express');
-const { Reader, Regulation } = require('../model');
-const { date } = require('joi');
-const { check } = require('prettier');
+const { Reader, Regulation, User } = require('../model');
 
 class ReaderController {
 	static checkAge(birthday, condittion) {
@@ -61,13 +58,14 @@ class ReaderController {
 		if (checkMaxBirthday && checkMinBirthday) {
 			try {
 				const createReader = await Reader.createOne(data);
-				if (createReader)
+
+				if (createReader) {
 					return res.json({
 						msg: 'Lập thẻ độc giả thành công!',
 						status: 201,
 						result: true,
 					});
-				else
+				} else
 					return res.json({
 						msg: 'Lập thẻ độc giả thất bại! Vui lòng thử lại.',
 						status: 201,
@@ -164,7 +162,7 @@ class ReaderController {
 
 	// [GET] api/reader/:id
 	async findOneReader(req, res) {
-		const id = req.body.id;
+		const id = req.params.id;
 
 		try {
 			const reader = await Reader.findOne(id);

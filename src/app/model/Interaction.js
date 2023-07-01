@@ -1,14 +1,6 @@
 const { firestore, realTimeDatabase } = require('../../config/db');
 
-const {
-	collection,
-	addDoc,
-	doc,
-	getDoc,
-	updateDoc,
-	deleteDoc,
-	getDocs,
-} = require('firebase/firestore/lite');
+const { collection } = require('firebase/firestore/lite');
 const Book = require('./Book');
 const Record = require('./Record');
 const Regulation = require('./Regulation');
@@ -16,20 +8,22 @@ const Regulation = require('./Regulation');
 class Interaction {
 	static reserveRef = collection(firestore, 'reserve_books');
 
-	static async createReserve(data) {
+	static async createRequest(data) {
 		try {
 			// realtime database
 			const db = realTimeDatabase.getDatabase();
 
-			const ref = realTimeDatabase.ref(db, 'reserveBook');
+			const ref = realTimeDatabase.ref(db, 'request');
 			const newRecordRef = realTimeDatabase.push(ref);
 
 			// Ghi dữ liệu vào key mới
 			realTimeDatabase.set(newRecordRef, {
 				student_id: data.student_id,
-				name: data.name,
-				book_id: data.book_id,
-				receive_date: data.receive_date,
+				fullName: data.fullName,
+				email: data.email,
+				address: data.address,
+				birthday: data.birthday,
+				typeOfReader: data.typeOfReader,
 			});
 
 			// firestore
@@ -41,29 +35,27 @@ class Interaction {
 		}
 	}
 
-	static async findReserveBook(student_id) {
+	static async findRequest() {
 		return new Promise((resolve, reject) => {
 			const db = realTimeDatabase.getDatabase();
-			const reserveBookRef = realTimeDatabase.ref(db, 'reserveBook');
+			const request = realTimeDatabase.ref(db, 'request');
 
 			realTimeDatabase.onValue(
-				reserveBookRef,
+				request,
 				(snapshot) => {
 					const data = snapshot.val();
-					const reserveBook = [];
+					const request = [];
 
 					if (data) {
 						// Lặp qua từng key trong dữ liệu
 						Object.keys(data).forEach((key) => {
 							const item = data[key];
-							if (item.student_id === student_id) {
-								reserveBook.push(item);
-							}
+							request.push(item);
 						});
+						resolve(request);
 					}
 
-					// Resolve với kết quả dữ liệu
-					resolve(reserveBook);
+					resolve([]);
 				},
 				(error) => {
 					// Reject nếu có lỗi xảy ra
@@ -71,6 +63,29 @@ class Interaction {
 				},
 			);
 		});
+	}
+
+	static async deleteRequest(student_id) {
+		const db = realTimeDatabase.getDatabase();
+		const ref = realTimeDatabase.ref(db, 'request');
+		let keyOfStudent = null;
+
+		realTimeDatabase.onValue(ref, (snapshot) => {
+			const data = snapshot.val();
+
+			if (data) {
+				// Lặp qua từng key trong dữ liệu
+				Object.keys(data).forEach((key) => {
+					const item = data[key];
+					if (item.student_id == student_id) keyOfStudent = key;
+				});
+			}
+		});
+		if (keyOfStudent !== null) {
+			realTimeDatabase.remove(realTimeDatabase.ref(db, `request/${keyOfStudent}`));
+			return true;
+		}
+		return false;
 	}
 
 	static async getHistory(student_id) {

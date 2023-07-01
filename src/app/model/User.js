@@ -13,6 +13,7 @@ const {
 class User {
 	static userRef = collection(firestore, `users`);
 	static userUSRef = collection(firestore, 'us_students');
+	static adminUSref = collection(firestore, 'us_admins');
 
 	constructor(id, password, ref, createdAt) {
 		this.id = id;
@@ -24,6 +25,17 @@ class User {
 	//CRUD
 	static async findUSOne(field, value) {
 		const queryResultUS = query(this.userUSRef, where(field, '==', value));
+		const querySnapshotUS = await getDocs(queryResultUS);
+
+		if (!querySnapshotUS.empty) {
+			return querySnapshotUS.docs.at(0).data();
+		} else {
+			return null;
+		}
+	}
+
+	static async findUSOneAdmin(field, value) {
+		const queryResultUS = query(this.adminUSref, where(field, '==', value));
 		const querySnapshotUS = await getDocs(queryResultUS);
 
 		if (!querySnapshotUS.empty) {
@@ -82,12 +94,8 @@ class User {
 
 	static async updateOne(id, newData) {
 		try {
-			const queryResult = query(this.userRef, where('id', '==', id));
-			const querySnapshot = await getDocs(queryResult);
-
-			querySnapshot.forEach((doc) => {
-				updateDoc(doc.ref, newData);
-			});
+			const docRef = doc(this.userRef, id);
+			await updateDoc(docRef, newData);
 			return true;
 		} catch (er) {
 			return false;

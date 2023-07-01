@@ -154,7 +154,7 @@ class AuthenController {
 				httpOnly: true,
 			})
 
-			return res.json({ result: true, refreshToken })
+			return res.json({ result: true, refreshToken, type: existingUser.type })
 		} else
 			return res.json({
 				msg: 'Mật khẩu không chính xác',

@@ -154,7 +154,22 @@ class AuthenController {
 				httpOnly: true,
 			})
 
-			return res.json({ result: true, refreshToken, type: existingUser.type })
+			let info
+			let queryInfo
+
+			if (existingUser.type == 'student') {
+				queryInfo = await User.findUSOne('id', req.body.id)
+			} else if (existingUser.type == 'admin') {
+				queryInfo = await User.findUSOneAdmin('id', req.body.id)
+			}
+
+			delete queryInfo.id
+
+			info = {
+				...queryInfo,
+			}
+
+			return res.json({ result: true, refreshToken, type: existingUser.type, info: info })
 		} else
 			return res.json({
 				msg: 'Mật khẩu không chính xác',

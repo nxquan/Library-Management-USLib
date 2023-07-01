@@ -177,7 +177,7 @@ class RecordController {
 		const studentId = req.params.student_id
 
 		try {
-			const records = await Record.findOne(['student_id'], [studentId])
+			const records = await Record.findSome(['student_id'], [studentId])
 			if (records) {
 				return res.json({
 					data: {

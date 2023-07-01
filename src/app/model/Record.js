@@ -98,6 +98,7 @@ class Record {
 
 			const queryResult = query(this.recordRef, ...conditions)
 			const querySnapshots = await getDocs(queryResult)
+			console.log(querySnapshots.docs.at(0).data())
 
 			return { ...querySnapshots.docs.at(0).data(), id: querySnapshots.docs.at(0).id }
 		} catch (er) {

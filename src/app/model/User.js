@@ -1,4 +1,4 @@
-const { firestore } = require('../../config/db');
+const { firestore } = require('../../config/db')
 const {
 	collection,
 	getDocs,
@@ -8,67 +8,67 @@ const {
 	setDoc,
 	getDoc,
 	doc,
-} = require('firebase/firestore/lite');
+} = require('firebase/firestore/lite')
 
 class User {
-	static userRef = collection(firestore, `users`);
-	static userUSRef = collection(firestore, 'us_students');
-	static adminUSref = collection(firestore, 'us_admins');
+	static userRef = collection(firestore, `users`)
+	static userUSRef = collection(firestore, 'us_students')
+	static adminUSref = collection(firestore, 'us_admins')
 
 	constructor(id, password, ref, createdAt) {
-		this.id = id;
-		this.password = password;
-		this.ref = ref;
-		this.createdAt = createdAt;
+		this.id = id
+		this.password = password
+		this.ref = ref
+		this.createdAt = createdAt
 	}
 
 	//CRUD
 	static async findUSOne(field, value) {
-		const queryResultUS = query(this.userUSRef, where(field, '==', value));
-		const querySnapshotUS = await getDocs(queryResultUS);
+		const queryResultUS = query(this.userUSRef, where(field, '==', value))
+		const querySnapshotUS = await getDocs(queryResultUS)
 
 		if (!querySnapshotUS.empty) {
-			return querySnapshotUS.docs.at(0).data();
+			return querySnapshotUS.docs.at(0).data()
 		} else {
-			return null;
+			return null
 		}
 	}
 
 	static async findUSOneAdmin(field, value) {
-		const queryResultUS = query(this.adminUSref, where(field, '==', value));
-		const querySnapshotUS = await getDocs(queryResultUS);
+		const queryResultUS = query(this.adminUSref, where(field, '==', value))
+		const querySnapshotUS = await getDocs(queryResultUS)
 
 		if (!querySnapshotUS.empty) {
-			return querySnapshotUS.docs.at(0).data();
+			return querySnapshotUS.docs.at(0).data()
 		} else {
-			return null;
+			return null
 		}
 	}
 
 	static async findOne(field, value) {
-		const queryResult = query(this.userRef, where(field, '==', value));
-		const querySnapshot = await getDocs(queryResult);
+		const queryResult = query(this.userRef, where(field, '==', value))
+		const querySnapshot = await getDocs(queryResult)
 
 		if (!querySnapshot.empty) {
-			return querySnapshot.docs.at(0).data();
+			return querySnapshot.docs.at(0).data()
 		} else {
-			return null;
+			return null
 		}
 	}
 
 	static async findById(value) {
 		try {
-			const docRef = doc(this.userRef, value);
-			const docSnap = await getDoc(docRef);
-			return docSnap.data();
+			const docRef = doc(this.userRef, value)
+			const docSnap = await getDoc(docRef)
+			return docSnap.data()
 		} catch (err) {
-			return null;
+			return null
 		}
 	}
 
 	static async createOne(data) {
-		const id = data.id;
-		const currentDate = new Date();
+		const id = data.id
+		const currentDate = new Date()
 
 		const newDocument = {
 			...data,
@@ -79,28 +79,27 @@ class User {
 					? '0' + (currentDate.getMonth() + 1)
 					: currentDate.getMonth() + 1
 			}/${currentDate.getFullYear()}`,
-		};
+		}
 
 		try {
-			const newDocRef = doc(this.userRef, id);
+			const newDocRef = doc(this.userRef, id)
 
-			const result = await setDoc(newDocRef, newDocument);
-			console.log(result);
-			return true;
+			const result = await setDoc(newDocRef, newDocument)
+			return true
 		} catch (er) {
-			return false;
+			return false
 		}
 	}
 
 	static async updateOne(id, newData) {
 		try {
-			const docRef = doc(this.userRef, id);
-			await updateDoc(docRef, newData);
-			return true;
+			const docRef = doc(this.userRef, id)
+			await updateDoc(docRef, newData)
+			return true
 		} catch (er) {
-			return false;
+			return false
 		}
 	}
 }
 
-module.exports = User;
+module.exports = User

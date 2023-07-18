@@ -121,10 +121,28 @@ class RecordController {
 		const recordId = record.id
 		delete record.id
 
+		for (let i = 0; i < bookIds.length; i++) {
+			let isExisting = false
+			for (let j = 0; j < record.book_ids.length; j++) {
+				const item = record.book_ids[j]
+				if (item.id === bookIds[i]) {
+					isExisting = true
+					break
+				}
+			}
+
+			if (!isExisting) {
+				return res.json({
+					msg: `Mã sách ${bookIds[i]} không tồn tại trong phiếu mượn`,
+					status: 400,
+					result: false,
+				})
+			}
+		}
+
 		if (record && record.is_return == false) {
 			for (let i = 0; i < record.book_ids.length; i++) {
 				const item = record.book_ids[i]
-
 				if (bookIds.includes(item.id)) {
 					if (item.is_return == false) {
 						const currentDate = new Date()
